@@ -68,7 +68,9 @@ export default function LandingPage({ onAuthenticate, isAuthenticating }) {
       </main>
 
       <footer className="landing-page__footer">
-        <p>Private & Local-First AI Knowledge Vault</p>
+        <span className="landing-page__highlight-badge">
+          Private & Local-First AI Knowledge Vault
+        </span>
       </footer>
     </div>
   );
