@@ -4,7 +4,7 @@ import GradientLogo from '../GradientLogo/GradientLogo';
 import ThreeBodyLoader from '../Loader/ThreeBodyLoader';
 import AnimatedProgress from '../AnimatedProgress/AnimatedProgress';
 import TextType from '../TextType/TextType';
-import Lightfall from '../Lightfall/Lightfall';
+import Prism from '../Prism/Prism';
 import './LoadingScreen.css';
 
 const PROGRESS_STEPS = [0, 12, 28, 46, 63, 81, 100];
@@ -48,23 +48,18 @@ export default function LoadingScreen({ userName = 'Alex', onComplete }) {
 
   return (
     <div className="loading-screen">
-      {/* Lightfall Animated Background Shader */}
-      <Lightfall
-        colors={['#A6C8FF', '#5227FF', '#FF9FFC', '#7C3AED']}
-        backgroundColor="#080c1d"
-        speed={0.8}
-        streakCount={8}
-        streakWidth={1}
-        streakLength={1.2}
+      {/* Prism Animated WebGL Background Shader */}
+      <Prism
+        animationType="rotate"
+        timeScale={0.5}
+        height={3.5}
+        baseWidth={5.5}
+        scale={3.6}
+        hueShift={0}
+        colorFrequency={1}
+        noise={0.3}
         glow={1.2}
-        density={0.7}
-        twinkle={1}
-        zoom={2.2}
-        backgroundGlow={1}
-        opacity={1}
-        mouseInteraction={true}
-        mouseStrength={1}
-        mouseRadius={0.6}
+        bloom={1.2}
       />
 
       <div className="loading-screen__container">
