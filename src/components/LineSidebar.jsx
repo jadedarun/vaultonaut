@@ -22,7 +22,7 @@ const LineSidebar = ({
   markerColor = '#6c6c6c',
   showIndex = true,
   showMarker = true,
-  proximityRadius = 120,
+  proximityRadius = 140,
   maxShift = 30,
   falloff = 'smooth',
   markerLength = 60,
@@ -49,8 +49,7 @@ const LineSidebar = ({
   activeRef.current = activeIndex;
   smoothingRef.current = smoothing;
 
-  // Single rAF loop that eases every item's --effect toward its target using
-  // frame-rate independent exponential smoothing
+  // Single rAF loop that eases every item's --effect toward its target
   const runFrame = useCallback(now => {
     const dt = Math.min((now - lastRef.current) / 1000, 0.05);
     lastRef.current = now;
@@ -129,6 +128,8 @@ const LineSidebar = ({
   return (
     <nav
       className={`line-sidebar${showMarker ? ' line-sidebar--markers' : ''}${scaleTick ? ' line-sidebar--scale-tick' : ''}${className ? ` ${className}` : ''}`}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
       style={{
         '--accent-color': accentColor,
         '--text-color': textColor,
@@ -142,7 +143,7 @@ const LineSidebar = ({
         '--smoothing': `${smoothing}ms`
       }}
     >
-      <ul ref={listRef} className="line-sidebar__list" onPointerMove={handlePointerMove} onPointerLeave={handlePointerLeave}>
+      <ul ref={listRef} className="line-sidebar__list">
         {items.map((label, index) => (
           <li
             key={`${label}-${index}`}
@@ -152,6 +153,10 @@ const LineSidebar = ({
             className="line-sidebar__item"
             aria-current={activeIndex === index ? 'true' : undefined}
             onClick={() => handleClick(index, label)}
+            onMouseEnter={() => {
+              targetsRef.current[index] = 1;
+              startLoop();
+            }}
           >
             {showMarker && <span className="line-sidebar__marker" aria-hidden="true" />}
             <span className="line-sidebar__label">
