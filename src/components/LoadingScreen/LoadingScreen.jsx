@@ -4,6 +4,7 @@ import GradientLogo from '../GradientLogo/GradientLogo';
 import ThreeBodyLoader from '../Loader/ThreeBodyLoader';
 import AnimatedProgress from '../AnimatedProgress/AnimatedProgress';
 import TextType from '../TextType/TextType';
+import Lightfall from '../Lightfall/Lightfall';
 import './LoadingScreen.css';
 
 const PROGRESS_STEPS = [0, 12, 28, 46, 63, 81, 100];
@@ -47,6 +48,25 @@ export default function LoadingScreen({ userName = 'Alex', onComplete }) {
 
   return (
     <div className="loading-screen">
+      {/* Lightfall Animated Background Shader */}
+      <Lightfall
+        colors={['#A6C8FF', '#5227FF', '#FF9FFC', '#7C3AED']}
+        backgroundColor="#080c1d"
+        speed={0.8}
+        streakCount={8}
+        streakWidth={1}
+        streakLength={1.2}
+        glow={1.2}
+        density={0.7}
+        twinkle={1}
+        zoom={2.2}
+        backgroundGlow={1}
+        opacity={1}
+        mouseInteraction={true}
+        mouseStrength={1}
+        mouseRadius={0.6}
+      />
+
       <div className="loading-screen__container">
         {/* Branding Above Loader */}
         <motion.div
@@ -65,7 +85,7 @@ export default function LoadingScreen({ userName = 'Alex', onComplete }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <ThreeBodyLoader size={46} color="#7C3AED" speed="0.8s" />
+          <ThreeBodyLoader size={46} color="#A855F7" speed="0.8s" />
         </motion.div>
 
         {/* React Bits TextType Component for Typing Effect */}

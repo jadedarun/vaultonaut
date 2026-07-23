@@ -1,17 +1,21 @@
 .landing-page {
   min-height: 100vh;
   width: 100%;
-  background-color: #FFFFFF;
+  position: relative;
+  background-color: #080c1d;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   padding: 48px 24px 32px;
-  color: #0F172A;
+  color: #F8FAFC;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .landing-page__container {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -27,7 +31,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 16px;
+  gap: 18px;
 }
 
 .landing-page__logo-wrapper {
@@ -43,37 +47,42 @@
 
 .landing-page__title {
   font-family: var(--font-heading, 'Outfit', sans-serif);
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 600;
-  color: #334155;
+  color: #E2E8F0;
   letter-spacing: -0.01em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
 .landing-page__tagline {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   font-family: var(--font-sans, 'Inter', sans-serif);
   font-size: 0.95rem;
   font-weight: 500;
-  color: #64748B;
+  color: #94A3B8;
   letter-spacing: 0.02em;
 }
 
 .landing-page__tagline .dot {
-  color: #CBD5E1;
+  color: #A855F7;
   font-size: 0.8rem;
 }
 
 .landing-page__auth-wrapper {
   width: 100%;
+  position: relative;
+  z-index: 2;
 }
 
 .landing-page__footer {
+  position: relative;
+  z-index: 2;
   text-align: center;
-  font-size: 0.8rem;
-  color: #94A3B8;
+  font-size: 0.85rem;
+  color: #64748B;
   font-weight: 500;
   letter-spacing: 0.02em;
 }
@@ -88,7 +97,7 @@
   }
   
   .landing-page__title {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
   }
   
   .landing-page__tagline {
