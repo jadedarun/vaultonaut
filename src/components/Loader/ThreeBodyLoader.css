@@ -1,0 +1,102 @@
+.three-body {
+  --uib-size: 45px;
+  --uib-speed: 0.8s;
+  --uib-color: #7C3AED;
+  position: relative;
+  display: inline-block;
+  height: var(--uib-size);
+  width: var(--uib-size);
+}
+
+.three-body__dot {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.three-body__dot::after {
+  content: '';
+  position: absolute;
+  height: 30%;
+  width: 30%;
+  background-color: var(--uib-color);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
+}
+
+.three-body__dot:nth-child(1) {
+  bottom: 5%;
+  left: 0;
+  transform: rotate(60deg);
+  transform-origin: 50% 85%;
+  animation: spin78236 calc(var(--uib-speed) * 2.2) infinite linear;
+}
+
+.three-body__dot:nth-child(1)::after {
+  bottom: 0;
+  left: 0;
+  animation: wobble1 calc(var(--uib-speed) * 1.25) infinite ease-in-out;
+  animation-delay: calc(var(--uib-speed) * -0.3);
+}
+
+.three-body__dot:nth-child(2) {
+  bottom: 5%;
+  right: 0;
+  transform: rotate(-60deg);
+  transform-origin: 50% 85%;
+  animation: spin78236 calc(var(--uib-speed) * 2.2) infinite linear;
+}
+
+.three-body__dot:nth-child(2)::after {
+  bottom: 0;
+  left: 0;
+  animation: wobble2 calc(var(--uib-speed) * 1.25) infinite ease-in-out;
+}
+
+.three-body__dot:nth-child(3) {
+  bottom: -5%;
+  left: 0;
+  transform: rotate(0deg);
+  transform-origin: 50% 85%;
+  animation: spin78236 calc(var(--uib-speed) * 2.2) infinite linear;
+}
+
+.three-body__dot:nth-child(3)::after {
+  bottom: 0;
+  left: 0;
+  animation: wobble2 calc(var(--uib-speed) * 1.25) infinite ease-in-out;
+  animation-delay: calc(var(--uib-speed) * -0.15);
+}
+
+@keyframes spin78236 {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wobble1 {
+  0%,
+  100% {
+    transform: translateY(0%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-66%) scale(0.65);
+    opacity: 0.6;
+  }
+}
+
+@keyframes wobble2 {
+  0%,
+  100% {
+    transform: translateY(0%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(66%) scale(0.65);
+    opacity: 0.6;
+  }
+}

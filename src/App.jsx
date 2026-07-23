@@ -32,6 +32,7 @@ import {
 import GradientText from './components/GradientText';
 import LineSidebar from './components/LineSidebar';
 import GradientBlinds from './components/GradientBlinds';
+import OnboardingFlow from './components/OnboardingFlow';
 import './App.css';
 
 // Initial Mock Files
@@ -262,7 +263,8 @@ export default function App() {
   };
 
   return (
-    <div className="app-container">
+    <OnboardingFlow>
+      <div className="app-container">
       {/* Background Animated Gradient Blinds */}
       <div className="bg-canvas-container">
         <GradientBlinds
@@ -998,6 +1000,7 @@ export default function App() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </OnboardingFlow>
   );
 }
