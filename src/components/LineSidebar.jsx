@@ -9,18 +9,10 @@ const FALLOFF_CURVES = {
 
 const DEFAULT_ITEMS = [
   'Overview',
-  'Components',
-  'Animations',
-  'Backgrounds',
-  'Showcase',
-  'Playground',
-  'Templates',
-  'Changelog',
-  'Changelog',
-  'Community',
-  'Resources',
-  'Documentation',
-  'Support'
+  'Vault Explorer',
+  'Ingestion Hub',
+  'Semantic QA',
+  'Study Suite'
 ];
 
 const LineSidebar = ({
@@ -30,7 +22,7 @@ const LineSidebar = ({
   markerColor = '#6c6c6c',
   showIndex = true,
   showMarker = true,
-  proximityRadius = 100,
+  proximityRadius = 120,
   maxShift = 30,
   falloff = 'smooth',
   markerLength = 60,
@@ -58,8 +50,7 @@ const LineSidebar = ({
   smoothingRef.current = smoothing;
 
   // Single rAF loop that eases every item's --effect toward its target using
-  // frame-rate independent exponential smoothing, so color, shift and scale
-  // all move together without staggering CSS transitions.
+  // frame-rate independent exponential smoothing
   const runFrame = useCallback(now => {
     const dt = Math.min((now - lastRef.current) / 1000, 0.05);
     lastRef.current = now;
@@ -67,9 +58,9 @@ const LineSidebar = ({
     const k = 1 - Math.exp(-dt / tau);
 
     let moving = false;
-    const items = itemRefs.current;
-    for (let i = 0; i < items.length; i++) {
-      const el = items[i];
+    const itemsList = itemRefs.current;
+    for (let i = 0; i < itemsList.length; i++) {
+      const el = itemsList[i];
       if (!el) continue;
       const target = Math.max(targetsRef.current[i] || 0, activeRef.current === i ? 1 : 0);
       const cur = currentRef.current[i] || 0;
@@ -97,11 +88,12 @@ const LineSidebar = ({
       const rect = list.getBoundingClientRect();
       const pointerY = e.clientY - rect.top;
       const ease = FALLOFF_CURVES[falloff] ?? FALLOFF_CURVES.linear;
-      const items = itemRefs.current;
-      for (let i = 0; i < items.length; i++) {
-        const el = items[i];
+      const itemsList = itemRefs.current;
+      for (let i = 0; i < itemsList.length; i++) {
+        const el = itemsList[i];
         if (!el) continue;
-        const center = el.offsetTop + el.offsetHeight / 2;
+        const itemRect = el.getBoundingClientRect();
+        const center = itemRect.top + itemRect.height / 2 - rect.top;
         const distance = Math.abs(pointerY - center);
         targetsRef.current[i] = ease(Math.max(0, 1 - distance / proximityRadius));
       }

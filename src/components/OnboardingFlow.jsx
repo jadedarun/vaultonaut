@@ -5,16 +5,14 @@ import LoadingScreen from './LoadingScreen/LoadingScreen';
 
 export default function OnboardingFlow({ children, initialStep = 'landing' }) {
   const [currentStep, setCurrentStep] = useState(initialStep);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [userName, setUserName] = useState('Alex');
 
-  const handleAuthenticate = (isNewUser = false) => {
-    setIsSignUp(isNewUser);
-    // Smooth transition to loading screen
+  const handleAuthenticate = (name = 'Alex') => {
+    setUserName(name || 'Alex');
     setCurrentStep('loading');
   };
 
   const handleLoadingComplete = () => {
-    // Automatically transition to dashboard upon reaching 100%
     setCurrentStep('dashboard');
   };
 
@@ -35,7 +33,7 @@ export default function OnboardingFlow({ children, initialStep = 'landing' }) {
 
       {currentStep === 'loading' && (
         <motion.div key="loading-step" style={{ width: '100%' }} {...pageTransition}>
-          <LoadingScreen onComplete={handleLoadingComplete} />
+          <LoadingScreen userName={userName} onComplete={handleLoadingComplete} />
         </motion.div>
       )}
 

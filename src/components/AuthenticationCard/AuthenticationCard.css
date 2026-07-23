@@ -83,3 +83,67 @@
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* Name Form Styles */
+.auth-card__name-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 16px;
+}
+
+.auth-card__google-account-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #1E293B;
+}
+
+.auth-card__form-subtitle {
+  font-size: 0.85rem;
+  color: #64748B;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.auth-card__input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #E2E8F0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: #0F172A;
+  background-color: #F8FAFC;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.auth-card__input:focus {
+  border-color: #7C3AED;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.auth-card__submit-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #6D28D9, #7C3AED);
+  color: #FFFFFF;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.3);
+}
+
+.auth-card__submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(109, 40, 217, 0.4);
+}

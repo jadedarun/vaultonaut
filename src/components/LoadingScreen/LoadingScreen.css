@@ -18,7 +18,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 440px;
+  max-width: 460px;
   gap: 32px;
   text-align: center;
 }
@@ -36,19 +36,19 @@
 }
 
 .loading-screen__text-wrapper {
-  height: 28px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
 }
 
-.loading-screen__message {
+.loading-screen__typing-text {
   font-family: var(--font-sans, 'Inter', sans-serif);
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: 1.05rem;
+  font-weight: 600;
   color: #475569;
   letter-spacing: -0.01em;
-  margin: 0;
 }
 
 .loading-screen__progress-wrapper {
