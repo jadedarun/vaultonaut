@@ -27,12 +27,17 @@ import {
   Search,
   ExternalLink,
   Lock,
-  ArrowRight
+  ArrowRight,
+  LogOut
 } from 'lucide-react';
+import { useGoogleAuth } from './context/GoogleAuthContext';
 import GradientText from './components/GradientText';
 import LineSidebar from './components/LineSidebar';
 import GradientBlinds from './components/GradientBlinds';
 import OnboardingFlow from './components/OnboardingFlow';
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
+import { GeistPixelSquare, GeistPixelGrid, GeistPixelCircle, GeistPixelTriangle, GeistPixelLine } from 'geist/font/pixel';
 import './App.css';
 
 // Initial Mock Files
@@ -76,8 +81,11 @@ const QUIZ_QUESTION = {
 };
 
 export default function App() {
+  const { user, logout } = useGoogleAuth();
+
   // State
   const [activeTab, setActiveTab] = useState(0);
+  const [turboMode, setTurboMode] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   
@@ -267,29 +275,34 @@ export default function App() {
       <div className="app-container">
       {/* Background Animated Gradient Blinds */}
       <div className="bg-canvas-container">
-        <GradientBlinds
-          gradientColors={['#0a0e17', '#2c3e50', '#80c6e8', '#b3ddf2', '#0a0e17']}
-          angle={45}
-          noise={0.12}
-          blindCount={12}
-          blindMinWidth={60}
-          mouseDampening={0.2}
-          spotlightRadius={0.6}
-          spotlightSoftness={1.2}
-          spotlightOpacity={0.8}
-          distortAmount={1}
-          mixBlendMode="normal"
-        />
+        {!turboMode ? (
+          <GradientBlinds
+            gradientColors={['#000000', '#0a0a0a', '#18181b', '#27272a', '#000000']}
+            angle={45}
+            noise={0.02}
+            blindCount={6}
+            blindMinWidth={60}
+            mouseDampening={0.1}
+            spotlightRadius={0.5}
+            spotlightSoftness={1}
+            spotlightOpacity={0.5}
+            distortAmount={0.3}
+            dpr={1}
+            mixBlendMode="normal"
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: '#000000' }} />
+        )}
       </div>
 
       {/* Sidebar Panel */}
       <aside className="sidebar-container">
         <div>
           <div className="logo-section">
-            <HardDrive size={28} className="logo-icon" />
+            <HardDrive size={28} className="logo-icon" style={{ color: '#ffffff' }} />
             <span className="logo-text">
               <GradientText
-                colors={['#e6f3ff', '#b3ddf2', '#80c6e8', '#ffffff']}
+                colors={['#ffffff', '#e4e4e7', '#a1a1aa', '#ffffff']}
                 animationSpeed={5}
                 showBorder={false}
               >
@@ -301,9 +314,9 @@ export default function App() {
           <div className="sidebar-nav">
             <LineSidebar
               items={tabs}
-              accentColor="#80c6e8"
-              textColor="#9ca3af"
-              markerColor="#4b5563"
+              accentColor="#ffffff"
+              textColor="#a1a1aa"
+              markerColor="#71717a"
               showIndex={true}
               showMarker={true}
               proximityRadius={90}
@@ -337,6 +350,15 @@ export default function App() {
           <div className="page-title">{tabs[activeTab]}</div>
           <div className="nav-actions">
             {/* The white buttons requested by the user */}
+            <button 
+              className="btn-white-outline" 
+              onClick={() => setTurboMode(!turboMode)} 
+              title="Toggle Turbo Mode (Disables GPU WebGL shaders for max FPS)"
+              style={{ borderColor: turboMode ? '#10b981' : 'rgba(255,255,255,0.25)', color: turboMode ? '#10b981' : '#ffffff' }}
+            >
+              <Zap size={16} />
+              <span>{turboMode ? 'Turbo On (120 FPS)' : 'Turbo Mode'}</span>
+            </button>
             <button className="btn-white-solid" onClick={() => setFeaturesOpen(true)}>
               <Sparkles size={16} />
               Features
@@ -344,6 +366,16 @@ export default function App() {
             <button className="btn-white-outline" onClick={() => setAboutOpen(true)}>
               <Info size={16} />
               About
+            </button>
+            {user && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.35rem 0.75rem', background: 'rgba(255,255,255,0.06)', borderRadius: '2rem', border: '1px solid rgba(255,255,255,0.12)' }}>
+                <img src={user.photoURL} alt={user.displayName} style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover' }} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f4f4f5' }}>{user.firstName}</span>
+              </div>
+            )}
+            <button className="btn-white-outline" onClick={logout} title="Sign Out" style={{ padding: '0.5rem 0.8rem' }}>
+              <LogOut size={16} />
+              <span>Logout</span>
             </button>
             <a 
               href="https://github.com" 
@@ -365,7 +397,7 @@ export default function App() {
             <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className="glass-card hero-banner">
                 <span className="badge-tag">v1.0.0 Starting Frontend</span>
-                <h1 className="hero-banner-title">AI-Powered Personal Knowledge Vault</h1>
+                <h1 className="hero-banner-title">Welcome back, {user?.firstName || 'Arun'} 👋</h1>
                 <p style={{ color: 'var(--text-secondary)', maxWidth: '750px', fontSize: '1.05rem', lineHeight: '1.5' }}>
                   Vaultonaut combines local document indexing with vector similarity search (RAG) and LLM generative reasoning. Upload PDFs, markdown files, transcripts, or web articles to get immediate, source-backed answers and study guides.
                 </p>

@@ -53,9 +53,9 @@ const GradientBlinds = ({
     if (!container) return;
 
     const renderer = new Renderer({
-      dpr: dpr ?? (typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1),
+      dpr: dpr ?? Math.min(1.25, typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1),
       alpha: true,
-      antialias: true
+      antialias: false
     });
     rendererRef.current = renderer;
     const gl = renderer.gl;

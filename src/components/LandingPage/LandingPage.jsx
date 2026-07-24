@@ -55,8 +55,7 @@ export default function LandingPage({ onAuthenticate, isAuthenticating }) {
           transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
         >
           <AuthenticationCard
-            onGoogleLogin={(name) => onAuthenticate(name, false)}
-            onGoogleSignUp={(name) => onAuthenticate(name, true)}
+            onGoogleLogin={onAuthenticate}
             isAuthenticating={isAuthenticating}
           />
         </motion.div>

@@ -1,31 +1,83 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
+/* Geist Fonts Definitions */
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('/node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Square';
+  src: url('/node_modules/geist/dist/fonts/geist-pixel/GeistPixel-Square.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Grid';
+  src: url('/node_modules/geist/dist/fonts/geist-pixel/GeistPixel-Grid.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Circle';
+  src: url('/node_modules/geist/dist/fonts/geist-pixel/GeistPixel-Circle.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Triangle';
+  src: url('/node_modules/geist/dist/fonts/geist-pixel/GeistPixel-Triangle.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Line';
+  src: url('/node_modules/geist/dist/fonts/geist-pixel/GeistPixel-Line.woff2') format('woff2');
+  font-display: swap;
+}
+
 :root {
-  /* Arctic Drift Color Palette */
+  /* Pitch Black Theme Color Palette */
   --color-arctic-1: #ffffff; /* pure white */
-  --color-arctic-2: #e6f3ff; /* ice blue white */
-  --color-arctic-3: #b3ddf2; /* frost blue */
-  --color-arctic-4: #80c6e8; /* glacier blue */
-  --color-arctic-5: #2c3e50; /* deep ocean abyss */
+  --color-arctic-2: #f4f4f5; /* clean light text */
+  --color-arctic-3: #e4e4e7; /* off-white highlight */
+  --color-arctic-4: #a1a1aa; /* silver grey */
+  --color-arctic-5: #18181b; /* dark charcoal */
   
   /* System Colors */
-  --bg-dark: #0a0e17;
-  --bg-dark-accent: #0f1524;
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --bg-dark: #000000;
+  --bg-dark-accent: #09090b;
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
   
-  /* Glassmorphism */
-  --glass-bg: rgba(15, 21, 36, 0.7);
-  --glass-card: rgba(44, 62, 80, 0.25);
-  --glass-border: rgba(179, 221, 242, 0.15);
-  --glass-border-hover: rgba(179, 221, 242, 0.3);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  /* Glassmorphism - Full Black Minimalist */
+  --glass-bg: rgba(0, 0, 0, 0.85);
+  --glass-card: rgba(18, 18, 18, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
   
-  /* Fonts */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-heading: 'Outfit', var(--font-sans);
-  --font-mono: 'JetBrains Mono', monospace;
+  /* Fonts - Geist default */
+  --font-sans: 'Geist Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Geist Sans', 'Outfit', var(--font-sans);
+  --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+  --font-pixel-square: 'Geist Pixel Square', monospace;
+  --font-pixel-grid: 'Geist Pixel Grid', monospace;
+  --font-pixel-circle: 'Geist Pixel Circle', monospace;
+  --font-pixel-triangle: 'Geist Pixel Triangle', monospace;
+  --font-pixel-line: 'Geist Pixel Line', monospace;
 
   font-family: var(--font-sans);
   line-height: 1.5;

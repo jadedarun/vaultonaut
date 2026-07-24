@@ -7,25 +7,32 @@ import TextType from '../TextType/TextType';
 import Prism from '../Prism/Prism';
 import './LoadingScreen.css';
 
-const PROGRESS_STEPS = [0, 12, 28, 46, 63, 81, 100];
+const PROGRESS_STEPS = [0, 15, 32, 54, 75, 90, 100];
 
-export default function LoadingScreen({ userName = 'Alex', onComplete }) {
+export default function LoadingScreen({ userName = 'Arun', onComplete }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [currentProgress, setCurrentProgress] = useState(0);
 
-  const sentences = useMemo(
+  // Extract first name only
+  const firstName = useMemo(() => {
+    if (!userName) return 'Arun';
+    return userName.trim().split(' ')[0];
+  }, [userName]);
+
+  const loadingSentences = useMemo(
     () => [
-      `Welcome ${userName} to the Vault!`,
-      `Initializing AI memory for ${userName}...`,
-      `Preparing your knowledge vault...`,
-      `Your workspace is ready!`
+      "Preparing your AI workspace...",
+      "Loading your Knowledge Vault...",
+      "Building semantic memory...",
+      "Connecting your documents...",
+      "Almost ready..."
     ],
-    [userName]
+    []
   );
 
   useEffect(() => {
-    // Timer interval for progressing through percentage steps (0 to 100) over ~3 seconds
-    const intervalTime = 420; // ms per step
+    // Progress animation from 0% to 100% over ~3 seconds
+    const intervalTime = 400; // ms per step
     const timer = setInterval(() => {
       setStepIndex((prev) => {
         const next = prev + 1;
@@ -34,10 +41,9 @@ export default function LoadingScreen({ userName = 'Alex', onComplete }) {
           return next;
         } else {
           clearInterval(timer);
-          // Trigger completion when reaching 100%
           setTimeout(() => {
             if (onComplete) onComplete();
-          }, 400);
+          }, 450);
           return prev;
         }
       });
@@ -71,6 +77,9 @@ export default function LoadingScreen({ userName = 'Alex', onComplete }) {
           transition={{ duration: 0.4 }}
         >
           <GradientLogo textSize="text-3xl" iconSize={32} />
+          <div style={{ color: '#f4f4f5', fontSize: '1.25rem', fontWeight: 600, marginTop: '0.6rem' }}>
+            Welcome back, {firstName}
+          </div>
         </motion.div>
 
         {/* Three Body Loader */}
@@ -86,13 +95,14 @@ export default function LoadingScreen({ userName = 'Alex', onComplete }) {
         {/* React Bits TextType Component for Typing Effect */}
         <div className="loading-screen__text-wrapper">
           <TextType
-            text={sentences}
-            typingSpeed={45}
-            pauseDuration={1000}
+            text={loadingSentences}
+            typingSpeed={65}
             deletingSpeed={25}
-            loop={true}
+            pauseDuration={1400}
             showCursor={true}
             cursorCharacter="|"
+            loop={true}
+            variableSpeed={{ min: 55, max: 80 }}
             cursorBlinkDuration={0.4}
             className="loading-screen__typing-text"
           />
