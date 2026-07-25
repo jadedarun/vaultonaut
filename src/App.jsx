@@ -34,7 +34,15 @@ import { useGoogleAuth } from './context/GoogleAuthContext';
 import GradientText from './components/GradientText';
 import LineSidebar from './components/LineSidebar';
 import GradientBlinds from './components/GradientBlinds';
+import { AnimatePresence } from 'framer-motion';
 import OnboardingFlow from './components/OnboardingFlow';
+import DashboardSection from './components/sections/DashboardSection';
+import KnowledgeVaultSection from './components/sections/KnowledgeVaultSection';
+import UploadCenterSection from './components/sections/UploadCenterSection';
+import AIWorkspaceSection from './components/sections/AIWorkspaceSection';
+import LearningStudioSection from './components/sections/LearningStudioSection';
+import AnalyticsSection from './components/sections/AnalyticsSection';
+import SettingsSection from './components/sections/SettingsSection';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { GeistPixelSquare, GeistPixelGrid, GeistPixelCircle, GeistPixelTriangle, GeistPixelLine } from 'geist/font/pixel';
@@ -118,7 +126,15 @@ export default function App() {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
 
   // Tab Labels mapped to Index
-  const tabs = ['Overview', 'Vault Explorer', 'Ingestion Hub', 'Semantic QA', 'Study Suite'];
+  const tabs = [
+    'Dashboard',
+    'Knowledge Vault',
+    'Upload Center',
+    'AI Workspace',
+    'Learning Studio',
+    'Analytics',
+    'Settings'
+  ];
 
   // Handle Tab Switch
   const handleTabChange = (index) => {
@@ -389,515 +405,31 @@ export default function App() {
           </div>
         </header>
 
-        {/* Dashboard Panels */}
+        {/* Dashboard Workspace Views */}
         <div className="dashboard-view">
-          
-          {/* TAB 0: OVERVIEW */}
-          {activeTab === 0 && (
-            <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div className="glass-card hero-banner">
-                <span className="badge-tag">v1.0.0 Starting Frontend</span>
-                <h1 className="hero-banner-title">Welcome back, {user?.firstName || 'Arun'} 👋</h1>
-                <p style={{ color: 'var(--text-secondary)', maxWidth: '750px', fontSize: '1.05rem', lineHeight: '1.5' }}>
-                  Vaultonaut combines local document indexing with vector similarity search (RAG) and LLM generative reasoning. Upload PDFs, markdown files, transcripts, or web articles to get immediate, source-backed answers and study guides.
-                </p>
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1.2rem' }}>
-                  <button className="btn-action" onClick={() => setActiveTab(2)}>
-                    <Upload size={16} /> Ingest Documents
-                  </button>
-                  <button className="btn-white-outline" onClick={() => setActiveTab(3)}>
-                    <Send size={16} /> Ask the Vault
-                  </button>
-                </div>
-              </div>
-
-              <div className="overview-grid">
-                <div className="glass-card col-span-2">
-                  <div className="card-header-row">
-                    <h2 className="card-title"><Database size={20} className="logo-icon" /> Vault Summary</h2>
-                    <span className="badge-tag">Ready</span>
-                  </div>
-                  <div className="stat-group" style={{ marginBottom: '1.5rem' }}>
-                    <div className="stat-item">
-                      <div className="stat-val">{files.length}</div>
-                      <div className="stat-lbl">Ingested Files</div>
-                    </div>
-                    <div className="stat-item">
-                      <div className="stat-val">{files.length * 8}</div>
-                      <div className="stat-lbl">Chroma DB Chunks</div>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'left' }}>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.8rem', fontWeight: '600' }}>Recent Ingests</p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                      {files.slice(0, 3).map(f => (
-                        <div key={f.id} style={{ display: 'flex', justifySelf: 'stretch', justifyContent: 'space-between', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.4rem', border: '1px solid rgba(255,255,255,0.04)', fontSize: '0.85rem' }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><FileText size={14} color="var(--color-arctic-3)" /> {f.name}</span>
-                          <span style={{ color: 'var(--text-muted)' }}>{f.date} &bull; {f.collection}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="glass-card">
-                  <div className="card-header-row">
-                    <h2 className="card-title"><Cpu size={20} className="logo-icon" /> Quick Ingest</h2>
-                  </div>
-                  <p className="card-desc" style={{ textAlign: 'left' }}>Import URLs directly into the active collection: <strong>{selectedCollection}</strong></p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div className="url-input-group" style={{ gap: '0.8rem' }}>
-                      <input 
-                        type="text" 
-                        placeholder="YouTube Video URL" 
-                        className="input-field" 
-                        value={youtubeUrl}
-                        onChange={(e) => setYoutubeUrl(e.target.value)}
-                      />
-                      <button className="btn-action" style={{ padding: '0.6rem' }} onClick={() => handleUrlIngest('youtube', youtubeUrl, setYoutubeUrl)}>
-                        <Link size={14} /> Import Transcript
-                      </button>
-                    </div>
-                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '0.5rem 0' }}></div>
-                    <div className="url-input-group" style={{ gap: '0.8rem' }}>
-                      <input 
-                        type="text" 
-                        placeholder="Web Article URL" 
-                        className="input-field" 
-                        value={articleUrl}
-                        onChange={(e) => setArticleUrl(e.target.value)}
-                      />
-                      <button className="btn-white-outline" style={{ padding: '0.6rem', width: '100%', justifyContent: 'center' }} onClick={() => handleUrlIngest('article', articleUrl, setArticleUrl)}>
-                        <ExternalLink size={14} /> Scrape Web Page
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 1: VAULT EXPLORER */}
-          {activeTab === 1 && (
-            <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ textAlign: 'left' }}>
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Knowledge Collections</h2>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Select a collection to filter your semantic search space</p>
-                </div>
-                <form onSubmit={createCollection} style={{ display: 'flex', gap: '0.6rem' }}>
-                  <input
-                    type="text"
-                    placeholder="New Collection Name"
-                    className="input-field"
-                    style={{ width: '220px', padding: '0.5rem 0.8rem' }}
-                    value={newColName}
-                    onChange={(e) => setNewColName(e.target.value)}
-                  />
-                  <button type="submit" className="btn-white-solid" style={{ padding: '0.5rem 1rem' }}>
-                    <FolderPlus size={16} /> Create
-                  </button>
-                </form>
-              </div>
-
-              <div className="collections-list">
-                {collections.map(col => {
-                  const count = files.filter(f => f.collection === col).length;
-                  return (
-                    <div 
-                      key={col} 
-                      className={`glass-card collection-card ${selectedCollection === col ? 'active' : ''}`}
-                      onClick={() => setSelectedCollection(col)}
-                      style={{ textAlign: 'left', padding: '1.2rem' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
-                        <FolderKanban size={20} color={selectedCollection === col ? 'var(--color-arctic-3)' : 'var(--text-secondary)'} />
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: '600' }}>{col}</h3>
-                      </div>
-                      <div className="collection-meta">
-                        <span>{count} files</span>
-                        <span>{count * 8} chunks</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="glass-card documents-table-card">
-                <div className="card-header-row">
-                  <h2 className="card-title">Files in Collection: {selectedCollection}</h2>
-                  <span className="badge-tag">{files.filter(f => f.collection === selectedCollection).length} documents</span>
-                </div>
-                
-                {files.filter(f => f.collection === selectedCollection).length === 0 ? (
-                  <div style={{ padding: '3rem', color: 'var(--text-muted)' }}>
-                    No files uploaded in this collection yet. Head over to Ingestion Hub to upload documents.
-                  </div>
-                ) : (
-                  <table className="doc-table">
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Size</th>
-                        <th>Indexed On</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {files.filter(f => f.collection === selectedCollection).map(f => (
-                        <tr key={f.id} className="doc-row">
-                          <td>
-                            <div className="doc-name">
-                              <FileText size={16} color="var(--color-arctic-4)" />
-                              {f.name}
-                            </div>
-                          </td>
-                          <td><span className="badge-tag">{f.type}</span></td>
-                          <td>{f.size}</td>
-                          <td>{f.date}</td>
-                          <td>
-                            <button 
-                              className="btn-icon-only" 
-                              style={{ padding: '0.3rem', border: 'none', background: 'transparent' }}
-                              onClick={() => setFiles(prev => prev.filter(x => x.id !== f.id))}
-                              title="Delete file & remove vectors"
-                            >
-                              <Trash2 size={15} color="#ef4444" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: INGESTION HUB */}
-          {activeTab === 2 && (
-            <div className="fade-in ingest-grid">
-              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', textAlign: 'left' }}>
-                <h2 className="card-title"><Upload size={20} className="logo-icon" /> Upload Local Files</h2>
-                <p className="card-desc">Supported formats: PDF, DOCX, Markdown, TXT. Files are chunked and converted to vector embeddings using a local sentence-transformer pipeline.</p>
-                
-                <div style={{ marginBottom: '1rem' }}>
-                  <label className="input-label" style={{ display: 'block', marginBottom: '0.4rem' }}>Active Target Collection</label>
-                  <select 
-                    className="input-field" 
-                    value={selectedCollection}
-                    onChange={(e) => setSelectedCollection(e.target.value)}
-                    style={{ background: 'rgba(10, 14, 23, 0.8)' }}
-                  >
-                    {collections.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-
-                <div 
-                  className={`file-dropzone ${isDragging ? 'dragging' : ''}`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <Upload size={40} className="dropzone-icon" />
-                  <p style={{ fontWeight: '600', marginBottom: '0.3rem' }}>Drag & drop files here</p>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>or click to browse local storage</p>
-                  <input
-                    type="file"
-                    id="file-input"
-                    multiple
-                    style={{ display: 'none' }}
-                    onChange={handleFileUpload}
-                  />
-                  <button className="btn-white-solid" onClick={() => document.getElementById('file-input').click()}>
-                    Browse Files
-                  </button>
-                </div>
-              </div>
-
-              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'left' }}>
-                <h2 className="card-title"><Link size={20} className="logo-icon" /> Import Web Articles & Transcripts</h2>
-                <p className="card-desc">Automatically fetch web pages or parse transcripts from YouTube videos to add to your knowledge vault.</p>
-
-                <div className="url-input-group">
-                  <div className="input-field-wrapper">
-                    <label className="input-label">YouTube Video URL</label>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input 
-                        type="text" 
-                        placeholder="https://www.youtube.com/watch?v=..." 
-                        className="input-field"
-                        value={youtubeUrl}
-                        onChange={(e) => setYoutubeUrl(e.target.value)}
-                      />
-                      <button className="btn-white-solid" style={{ flexShrink: 0 }} onClick={() => handleUrlIngest('youtube', youtubeUrl, setYoutubeUrl)}>
-                        Import
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="input-field-wrapper" style={{ marginTop: '0.5rem' }}>
-                    <label className="input-label">Web Article URL</label>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input 
-                        type="text" 
-                        placeholder="https://medium.com/engineering/..." 
-                        className="input-field"
-                        value={articleUrl}
-                        onChange={(e) => setArticleUrl(e.target.value)}
-                      />
-                      <button className="btn-white-solid" style={{ flexShrink: 0 }} onClick={() => handleUrlIngest('article', articleUrl, setArticleUrl)}>
-                        Scrape
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {uploadTasks.length > 0 && (
-                  <div style={{ marginTop: '1rem' }}>
-                    <p style={{ fontWeight: '600', fontSize: '0.9rem', marginBottom: '0.6rem' }}>Ingestion Progress</p>
-                    <div className="file-progress-list">
-                      {uploadTasks.map(t => (
-                        <div key={t.id} className="progress-item">
-                          <div className="progress-info">
-                            <span className="progress-filename">{t.name}</span>
-                            <span className="progress-status">
-                              {t.progress < 100 ? (
-                                <RefreshCw size={12} className="logo-icon" style={{ animation: 'spin 1.5s linear infinite' }} />
-                              ) : (
-                                <CheckCircle size={12} color="#10b981" />
-                              )}
-                              {t.status}
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
-                            <span style={{ fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>{t.progress}%</span>
-                            <div style={{ width: '80px', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
-                              <div style={{ width: `${t.progress}%`, height: '100%', background: 'var(--color-arctic-3)', transition: 'width 0.3s ease' }}></div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: SEMANTIC QA */}
-          {activeTab === 3 && (
-            <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div className="glass-card" style={{ padding: '1.2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Active Search Context</h3>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Querying vector embeddings inside collection: <strong>{selectedCollection}</strong></p>
-                </div>
-                <div style={{ display: 'flex', gap: '0.8rem' }}>
-                  <select 
-                    className="input-field" 
-                    value={selectedCollection}
-                    onChange={(e) => setSelectedCollection(e.target.value)}
-                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(10, 14, 23, 0.8)' }}
-                  >
-                    {collections.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="chat-window">
-                <div className="chat-history">
-                  {chatMessages.map((msg, index) => (
-                    <div key={index} className={`chat-msg ${msg.sender === 'user' ? 'user' : 'system'}`}>
-                      <div className="avatar">
-                        {msg.sender === 'user' ? 'U' : <Cpu size={16} />}
-                      </div>
-                      <div className="msg-bubble">
-                        {msg.isLoading ? (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <RefreshCw size={14} className="logo-icon" style={{ animation: 'spin 1.5s linear infinite' }} />
-                            {msg.text}
-                          </span>
-                        ) : (
-                          <>
-                            {msg.text}
-                            {msg.citations && msg.citations.length > 0 && (
-                              <div style={{ marginTop: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.4rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Citations:</span>
-                                {msg.citations.map((cit, idx) => (
-                                  <span key={idx} className="citation" title="Show document source chunk">
-                                    <FileText size={10} style={{ marginRight: '0.2rem' }} />
-                                    {cit}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <form onSubmit={handleSendMessage} className="chat-input-bar">
-                  <input
-                    type="text"
-                    placeholder='Ask a question (e.g. "How does RAG work?" or "What is SOLID?")'
-                    className="input-field"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                  />
-                  <button type="submit" className="btn-action" style={{ padding: '0.8rem 1.2rem' }}>
-                    <Send size={16} />
-                  </button>
-                </form>
-              </div>
-
-              <div style={{ textAlign: 'left' }}>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>Suggested Questions:</p>
-                <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
-                  <button 
-                    className="btn-white-outline" 
-                    style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
-                    onClick={() => setChatInput('How does RAG work?')}
-                  >
-                    How does RAG work?
-                  </button>
-                  <button 
-                    className="btn-white-outline" 
-                    style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
-                    onClick={() => setChatInput('What is FastAPI?')}
-                  >
-                    What is FastAPI?
-                  </button>
-                  <button 
-                    className="btn-white-outline" 
-                    style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
-                    onClick={() => setChatInput('What are SOLID design principles?')}
-                  >
-                    What are SOLID design principles?
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: STUDY SUITE */}
-          {activeTab === 4 && (
-            <div className="fade-in study-grid">
-              {/* Flashcards */}
-              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', textAlign: 'left' }}>
-                <div className="card-header-row">
-                  <h2 className="card-title"><BookOpen size={20} className="logo-icon" /> AI Flashcards</h2>
-                  <span className="badge-tag">Card {fcIndex + 1} of {FLASHCARDS.length}</span>
-                </div>
-                <p className="card-desc">Interactive flashcards synthesized automatically from your ingested files. Click the card to flip it and view the definition.</p>
-                
-                <div className="flashcard-wrapper" onClick={() => setFcFlipped(!fcFlipped)}>
-                  <div className={`flashcard ${fcFlipped ? 'flipped' : ''}`}>
-                    <div className="flashcard-side flashcard-front">
-                      <span className="flashcard-meta">Question</span>
-                      <div className="flashcard-body">{FLASHCARDS[fcIndex].q}</div>
-                      <span className="flashcard-instructions">Click to reveal answer</span>
-                    </div>
-                    <div className="flashcard-side flashcard-back">
-                      <span className="flashcard-meta" style={{ color: 'var(--color-arctic-4)' }}>Answer</span>
-                      <div className="flashcard-body">{FLASHCARDS[fcIndex].a}</div>
-                      <span className="flashcard-instructions" style={{ color: 'var(--color-arctic-4)' }}>Click to see question</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flashcard-controls">
-                  <button 
-                    className="btn-white-outline"
-                    disabled={fcIndex === 0}
-                    onClick={() => {
-                      setFcFlipped(false);
-                      setTimeout(() => setFcIndex(prev => Math.max(0, prev - 1)), 150);
-                    }}
-                  >
-                    Previous
-                  </button>
-                  <button 
-                    className="btn-white-solid"
-                    disabled={fcIndex === FLASHCARDS.length - 1}
-                    onClick={() => {
-                      setFcFlipped(false);
-                      setTimeout(() => setFcIndex(prev => Math.min(FLASHCARDS.length - 1, prev + 1)), 150);
-                    }}
-                  >
-                    Next Card
-                  </button>
-                </div>
-              </div>
-
-              {/* Quizzes */}
-              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', textAlign: 'left' }}>
-                <div className="card-header-row">
-                  <h2 className="card-title"><Award size={20} className="logo-icon" /> AI-Generated Quiz</h2>
-                  <span className="badge-tag">RAG Evaluation</span>
-                </div>
-                <p className="card-desc">Self-evaluation multiple choice questions compiled from document segments.</p>
-
-                <div className="quiz-question-box">
-                  <p className="quiz-question-text">{QUIZ_QUESTION.question}</p>
-                  
-                  <div className="quiz-options">
-                    {QUIZ_QUESTION.options.map((opt, idx) => {
-                      let optionClass = 'quiz-option-btn';
-                      if (quizSelected === idx) optionClass += ' selected';
-                      if (quizSubmitted) {
-                        if (opt.isCorrect) optionClass += ' correct';
-                        else if (quizSelected === idx) optionClass += ' incorrect';
-                      }
-
-                      return (
-                        <button 
-                          key={idx}
-                          className={optionClass}
-                          disabled={quizSubmitted}
-                          onClick={() => setQuizSelected(idx)}
-                        >
-                          <span>{opt.text}</span>
-                          {quizSubmitted && opt.isCorrect && <CheckCircle size={16} color="#10b981" />}
-                          {quizSubmitted && !opt.isCorrect && quizSelected === idx && <X size={16} color="#ef4444" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {quizSubmitted ? (
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem', lineHeight: '1.4' }}>
-                      <p style={{ fontWeight: '600', color: 'var(--color-arctic-3)', marginBottom: '0.3rem' }}>Explanation:</p>
-                      <p style={{ color: 'var(--text-secondary)' }}>{QUIZ_QUESTION.explanation}</p>
-                      <button 
-                        className="btn-white-outline" 
-                        style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}
-                        onClick={() => {
-                          setQuizSelected(null);
-                          setQuizSubmitted(false);
-                        }}
-                      >
-                        Reset Quiz
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="btn-action" 
-                      style={{ width: '100%', marginTop: '0.5rem' }}
-                      disabled={quizSelected === null}
-                      onClick={() => setQuizSubmitted(true)}
-                    >
-                      Submit Answer
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
+          <AnimatePresence mode="wait">
+            {activeTab === 0 && (
+              <DashboardSection key="dashboard" user={user} onNavigate={handleTabChange} files={files} />
+            )}
+            {activeTab === 1 && (
+              <KnowledgeVaultSection key="vault" files={files} collections={collections} selectedCollection={selectedCollection} setSelectedCollection={setSelectedCollection} />
+            )}
+            {activeTab === 2 && (
+              <UploadCenterSection key="upload" onFileUpload={handleFileUpload} onUrlIngest={handleUrlIngest} youtubeUrl={youtubeUrl} setYoutubeUrl={setYoutubeUrl} articleUrl={articleUrl} setArticleUrl={setArticleUrl} uploadTasks={uploadTasks} />
+            )}
+            {activeTab === 3 && (
+              <AIWorkspaceSection key="ai" chatMessages={chatMessages} chatInput={chatInput} setChatInput={setChatInput} onSendMessage={handleSendMessage} />
+            )}
+            {activeTab === 4 && (
+              <LearningStudioSection key="learning" />
+            )}
+            {activeTab === 5 && (
+              <AnalyticsSection key="analytics" />
+            )}
+            {activeTab === 6 && (
+              <SettingsSection key="settings" user={user} logout={logout} />
+            )}
+          </AnimatePresence>
         </div>
       </main>
 

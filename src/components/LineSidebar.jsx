@@ -8,11 +8,13 @@ const FALLOFF_CURVES = {
 };
 
 const DEFAULT_ITEMS = [
-  'Overview',
-  'Vault Explorer',
-  'Ingestion Hub',
-  'Semantic QA',
-  'Study Suite'
+  'Dashboard',
+  'Knowledge Vault',
+  'Upload Center',
+  'AI Workspace',
+  'Learning Studio',
+  'Analytics',
+  'Settings'
 ];
 
 const LineSidebar = ({
