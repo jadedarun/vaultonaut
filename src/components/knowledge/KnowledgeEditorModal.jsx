@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Sparkles, Plus, Tag as TagIcon, Check } from 'lucide-react';
+import { X, Sparkles, Plus } from 'lucide-react';
 
 export default function KnowledgeEditorModal({ isOpen, onClose, onSave, initialData }) {
   const [title, setTitle] = useState('');
@@ -13,22 +13,25 @@ export default function KnowledgeEditorModal({ isOpen, onClose, onSave, initialD
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title || '');
-      setContent(initialData.content || '');
-      setCategory(initialData.category || 'General');
-      setTags(initialData.tags || []);
-      setFavorite(initialData.favorite || false);
-      setPinned(initialData.pinned || false);
-    } else {
-      setTitle('');
-      setContent('');
-      setCategory('General');
-      setTags([]);
-      setFavorite(false);
-      setPinned(false);
+    if (isOpen) {
+      if (initialData) {
+        setTitle(initialData.title || '');
+        setContent(initialData.content || '');
+        setCategory(initialData.category || 'General');
+        setTags(initialData.tags || []);
+        setFavorite(initialData.favorite || false);
+        setPinned(initialData.pinned || false);
+      } else {
+        setTitle('');
+        setContent('');
+        setCategory('General');
+        setTags([]);
+        setFavorite(false);
+        setPinned(false);
+      }
+      setError('');
+      setSubmitting(false);
     }
-    setError('');
   }, [initialData, isOpen]);
 
   if (!isOpen) return null;
@@ -72,10 +75,10 @@ export default function KnowledgeEditorModal({ isOpen, onClose, onSave, initialD
         favorite,
         pinned
       });
+      setSubmitting(false);
       onClose();
     } catch (err) {
       setError(err.message || 'Failed to save document.');
-    } finally {
       setSubmitting(false);
     }
   };

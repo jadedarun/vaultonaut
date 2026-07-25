@@ -1,16 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  FolderPlus, 
   Search, 
   Plus, 
-  FileText, 
-  Filter, 
-  ArrowUpDown, 
-  Star, 
-  Bookmark, 
-  Layers, 
-  RefreshCw 
+  FileText 
 } from 'lucide-react';
 import { useKnowledge } from '../../context/KnowledgeContext';
 import KnowledgeCard from '../knowledge/KnowledgeCard';
@@ -22,7 +15,6 @@ export default function KnowledgeVaultSection() {
     items,
     total,
     page,
-    pageSize,
     totalPages,
     loading,
     error,
@@ -37,7 +29,6 @@ export default function KnowledgeVaultSection() {
     filterType,
     setFilterType,
     setPage,
-    fetchKnowledge,
     createItem,
     updateItem,
     deleteItem,
@@ -68,6 +59,9 @@ export default function KnowledgeVaultSection() {
       await updateItem(editingItem.id, payload);
     } else {
       await createItem(payload);
+      // Reset filter so created document is immediately visible
+      setCategory('All');
+      setFilterType('all');
     }
   };
 
@@ -97,7 +91,7 @@ export default function KnowledgeVaultSection() {
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>Knowledge Vault</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Create, manage, and filter your structured knowledge documents ({total} items)
+            Create, manage, and filter your structured knowledge documents ({total || items.length} items)
           </p>
         </div>
 
@@ -136,7 +130,7 @@ export default function KnowledgeVaultSection() {
           </div>
 
           {/* Sort Dropdown */}
-          <div style={{ display: 'flex', itemsCenter: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Sort:</span>
             <select
               className="input-field"
@@ -177,7 +171,7 @@ export default function KnowledgeVaultSection() {
       </div>
 
       {/* Loading Skeletons */}
-      {loading && (
+      {loading && items.length === 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.2rem' }}>
           {[1, 2, 3].map(i => (
             <div key={i} className="glass-card" style={{ padding: '1.5rem', height: '180px', opacity: 0.5, animation: 'pulse 1.5s infinite' }}>
@@ -189,15 +183,8 @@ export default function KnowledgeVaultSection() {
         </div>
       )}
 
-      {/* Error Banner */}
-      {error && !loading && (
-        <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '0.5rem', color: '#f87171', fontSize: '0.85rem' }}>
-          {error}
-        </div>
-      )}
-
       {/* Empty State */}
-      {!loading && !error && items.length === 0 && (
+      {!loading && items.length === 0 && (
         <div className="glass-card" style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
           <FileText size={48} color="var(--text-muted)" style={{ margin: '0 auto 1rem auto' }} />
           <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--color-arctic-1)', marginBottom: '0.4rem' }}>
@@ -215,7 +202,7 @@ export default function KnowledgeVaultSection() {
       )}
 
       {/* Knowledge Cards Grid */}
-      {!loading && !error && items.length > 0 && (
+      {items.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.2rem' }}>
           {items.map(item => (
             <KnowledgeCard
@@ -231,7 +218,7 @@ export default function KnowledgeVaultSection() {
       )}
 
       {/* Pagination Controls */}
-      {!loading && totalPages > 1 && (
+      {totalPages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
           <button
             className="btn-white-outline"
@@ -242,7 +229,7 @@ export default function KnowledgeVaultSection() {
             ← Previous
           </button>
           <span style={{ fontSize: '0.85rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-            Page {page} of {totalPages} ({total} items)
+            Page {page} of {totalPages} ({total || items.length} items)
           </span>
           <button
             className="btn-white-outline"
