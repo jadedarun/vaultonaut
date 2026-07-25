@@ -9,9 +9,8 @@ import {
   ShieldCheck, 
   HardDrive, 
   Info, 
-  Check 
+  LogOut 
 } from 'lucide-react';
-import GradientText from '../GradientText';
 
 export default function SettingsSection({ user, logout }) {
   const [activeTab, setActiveTab] = useState('profile'); // profile | appearance | ai | notifications | security | storage | about
@@ -28,28 +27,27 @@ export default function SettingsSection({ user, logout }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -15 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.25 }}
+      style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'left' }}
     >
       {/* Header */}
-      <div className="bg-[#0c101d] border border-slate-800/80 p-6 rounded-3xl backdrop-blur-xl">
-        <div className="flex items-center gap-2 text-xs font-semibold text-cyan-400 mb-1 font-mono">
-          <SettingsIcon className="w-4 h-4" />
-          <span>SYSTEM CONFIGURATION</span>
+      <div className="glass-card" style={{ padding: '1.5rem' }}>
+        <div className="card-header-row">
+          <h2 className="card-title">
+            <SettingsIcon size={20} className="logo-icon" /> Settings & Account
+          </h2>
+          <span className="badge-tag">System Configuration</span>
         </div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">
-          Settings & Account
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="card-desc" style={{ marginTop: '0.4rem' }}>
           Manage your user profile, AI model parameters, vector database storage, and system security controls.
         </p>
       </div>
 
-      {/* Settings Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-800/80 scrollbar-none">
+      {/* Settings Sub-Tabs Navigation */}
+      <div style={{ display: 'flex', gap: '0.6rem', overflowX: 'auto', paddingBottom: '0.4rem', borderBottom: '1px solid var(--glass-border)' }}>
         {settingsTabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -57,13 +55,10 @@ export default function SettingsSection({ user, logout }) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${
-                isActive 
-                  ? 'bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 shadow-lg shadow-cyan-500/10' 
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
-              }`}
+              className={isActive ? 'btn-white-solid' : 'btn-white-outline'}
+              style={{ fontSize: '0.85rem', padding: '0.45rem 1rem', borderRadius: '0.5rem', whiteSpace: 'nowrap' }}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+              <Icon size={14} />
               <span>{tab.label}</span>
             </button>
           );
@@ -72,64 +67,69 @@ export default function SettingsSection({ user, logout }) {
 
       {/* Tab 1: Profile */}
       {activeTab === 'profile' && (
-        <div className="p-6 rounded-2xl bg-[#0c101d] border border-slate-800/80 backdrop-blur-md space-y-6">
-          <div className="flex items-center gap-4">
+        <div className="glass-card" style={{ padding: '1.8rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
             <img 
               src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || 'User')}`} 
               alt="Profile" 
-              className="w-16 h-16 rounded-2xl object-cover border-2 border-cyan-400/40 shadow-xl"
+              style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--color-arctic-3)' }}
             />
             <div>
-              <h2 className="text-base font-bold text-white">{user?.displayName || 'Vaultonaut User'}</h2>
-              <p className="text-xs text-slate-400">{user?.email || 'user@vaultonaut.com'}</p>
-              <span className="inline-block px-2.5 py-0.5 mt-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-400 font-mono">
-                ● Authenticated via Google OAuth 2.0
+              <h3 style={{ fontSize: '1.3rem', fontWeight: '700', color: 'var(--color-arctic-1)' }}>
+                {user?.displayName || `${user?.firstName || 'Vaultonaut'} ${user?.lastName || ''}`.trim()}
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{user?.email || 'user@vaultonaut.com'}</p>
+              <span className="badge-tag" style={{ marginTop: '0.4rem', display: 'inline-block' }}>
+                Authenticated via Google OAuth 2.0
               </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-800">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <div>
-              <label className="text-xs text-slate-400 font-mono">First Name</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.4rem', fontFamily: 'var(--font-mono)' }}>First Name</label>
               <input 
                 type="text" 
                 readOnly 
-                value={user?.firstName || 'Vaultonaut'} 
-                className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200"
+                value={user?.firstName || 'Arunachalam'} 
+                className="input-field" 
               />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-mono">Last Name</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.4rem', fontFamily: 'var(--font-mono)' }}>Last Name</label>
               <input 
                 type="text" 
                 readOnly 
-                value={user?.lastName || 'User'} 
-                className="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200"
+                value={user?.lastName || 'Nachiappan'} 
+                className="input-field" 
               />
             </div>
           </div>
 
-          <button
-            onClick={logout}
-            className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-semibold border border-rose-500/40 transition-all"
-          >
-            Sign Out of Account
-          </button>
+          <div style={{ paddingTop: '0.5rem' }}>
+            <button
+              onClick={logout}
+              className="btn-white-outline"
+              style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.4)', padding: '0.6rem 1.2rem' }}
+            >
+              <LogOut size={15} /> Sign Out of Account
+            </button>
+          </div>
         </div>
       )}
 
       {/* Tab 2: Appearance */}
       {activeTab === 'appearance' && (
-        <div className="p-6 rounded-2xl bg-[#0c101d] border border-slate-800/80 backdrop-blur-md space-y-4">
-          <h2 className="text-base font-semibold text-white">Appearance & Theme</h2>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
-              <span className="text-xs text-slate-200 font-medium">Dark Glassmorphism Theme</span>
-              <span className="text-xs text-cyan-400 font-mono">Active (Default)</span>
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>Appearance & Fonts</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+            <div style={{ padding: '0.9rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>Theme Mode</span>
+              <span className="badge-tag">Dark Glassmorphism (Default)</span>
             </div>
-            <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
-              <span className="text-xs text-slate-200 font-medium">Typography Engine</span>
-              <span className="text-xs text-slate-400 font-mono">Geist Sans & Geist Pixel</span>
+            <div style={{ padding: '0.9rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>Typography Standard</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--color-arctic-3)' }}>Geist Sans & Geist Mono</span>
             </div>
           </div>
         </div>
@@ -137,69 +137,28 @@ export default function SettingsSection({ user, logout }) {
 
       {/* Tab 3: AI Preferences */}
       {activeTab === 'ai' && (
-        <div className="p-6 rounded-2xl bg-[#0c101d] border border-slate-800/80 backdrop-blur-md space-y-4">
-          <h2 className="text-base font-semibold text-white">RAG & AI Model Configuration</h2>
-          <div className="space-y-3 text-xs">
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between">
-              <span className="text-slate-300">Vector Embedding Model</span>
-              <span className="text-cyan-400 font-mono">sentence-transformers/all-MiniLM-L6-v2</span>
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>RAG & Vector Search Settings</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+            <div style={{ padding: '0.9rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>Embedding Model</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--color-arctic-3)' }}>sentence-transformers/all-MiniLM-L6-v2</span>
             </div>
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between">
-              <span className="text-slate-300">Chunk Size & Overlap</span>
-              <span className="text-purple-400 font-mono">500 chars / 50 overlap</span>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between">
-              <span className="text-slate-300">LLM Context Window</span>
-              <span className="text-emerald-400 font-mono">4,096 tokens</span>
+            <div style={{ padding: '0.9rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>Chunking Size</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--color-arctic-3)' }}>500 characters / 50 overlap</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Tab 4: Security */}
-      {activeTab === 'security' && (
-        <div className="p-6 rounded-2xl bg-[#0c101d] border border-slate-800/80 backdrop-blur-md space-y-4">
-          <h2 className="text-base font-semibold text-white">Security & Token Control</h2>
-          <div className="space-y-3 text-xs">
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between">
-              <span className="text-slate-300">FastAPI JWT Status</span>
-              <span className="text-emerald-400 font-mono">✓ Signed Bearer JWT Token Active</span>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between">
-              <span className="text-slate-300">OAuth Provider</span>
-              <span className="text-cyan-400 font-mono">Google OAuth 2.0 Token Verification</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 5: Storage */}
-      {activeTab === 'storage' && (
-        <div className="p-6 rounded-2xl bg-[#0c101d] border border-slate-800/80 backdrop-blur-md space-y-4">
-          <h2 className="text-base font-semibold text-white">Vector Storage & Database</h2>
-          <div className="space-y-3 text-xs">
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between">
-              <span className="text-slate-300">Database Engine</span>
-              <span className="text-cyan-400 font-mono">PostgreSQL 16 (SQLAlchemy 2.0)</span>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between">
-              <span className="text-slate-300">Vector Store</span>
-              <span className="text-purple-400 font-mono">ChromaDB Local Vector Collections</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 6: About */}
-      {(activeTab === 'about' || activeTab === 'notifications') && (
-        <div className="p-6 rounded-2xl bg-[#0c101d] border border-slate-800/80 backdrop-blur-md space-y-3 text-xs">
-          <h2 className="text-base font-semibold text-white">About Vaultonaut</h2>
-          <p className="text-slate-400 leading-relaxed">
-            Vaultonaut is an AI-powered Personal Knowledge Vault enabling users to upload documents, perform RAG semantic search with grounded citations, and generate flashcards, quizzes, and study plans.
+      {/* Other Settings Tabs */}
+      {(activeTab === 'notifications' || activeTab === 'security' || activeTab === 'storage' || activeTab === 'about') && (
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>System Information</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+            Vaultonaut v1.0.0 is running locally with FastAPI (Python) backend, PostgreSQL / SQLite storage, and React Vite frontend styling with Geist Typography.
           </p>
-          <div className="pt-2 text-slate-500 font-mono">
-            Version 1.0.0 • Milestone 2 Complete
-          </div>
         </div>
       )}
     </motion.div>
