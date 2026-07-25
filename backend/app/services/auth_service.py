@@ -1,4 +1,5 @@
-from typing import Dict, Any, Optional
+import asyncio
+from typing import Dict, Any
 import httpx
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -17,55 +18,59 @@ class AuthService:
     async def verify_google_token(raw_token: str) -> Dict[str, Any]:
         """
         Verifies a Google OAuth token.
-        Validates issuer, audience, expiration, and email_verified status.
-        Supports both ID tokens (Google JWT credential) and OAuth2 Access Tokens.
+        Detects JWT ID Tokens vs OAuth2 Access Tokens automatically and verifies without blocking the event loop.
         """
-        # Try ID Token verification first using Google official SDK
+        raw_token_clean = raw_token.strip()
+
+        # Check if token is a Google JWT ID Token (contains exactly 2 dots)
+        if raw_token_clean.count(".") == 2 and not raw_token_clean.startswith("ya29"):
+            try:
+                def _verify_id_token_sync():
+                    request = google_requests.Request()
+                    return id_token.verify_oauth2_token(
+                        raw_token_clean,
+                        request,
+                        settings.GOOGLE_CLIENT_ID,
+                        clock_skew_in_seconds=10
+                    )
+
+                id_info = await asyncio.to_thread(_verify_id_token_sync)
+
+                # Validate issuer
+                issuer = id_info.get("iss")
+                if issuer not in ["accounts.google.com", "https://accounts.google.com"]:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail=f"Invalid token issuer: {issuer}"
+                    )
+
+                # Validate email_verified
+                if not id_info.get("email_verified", False):
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Google account email is not verified"
+                    )
+
+                return {
+                    "sub": id_info.get("sub"),
+                    "email": id_info.get("email"),
+                    "given_name": id_info.get("given_name"),
+                    "family_name": id_info.get("family_name"),
+                    "name": id_info.get("name"),
+                    "picture": id_info.get("picture"),
+                    "email_verified": id_info.get("email_verified", True),
+                }
+            except HTTPException:
+                raise
+            except Exception as id_err:
+                logger.info(f"ID Token verification failed ({id_err}). Attempting OAuth userinfo fallback...")
+
+        # OAuth2 Access Token fallback via async HTTP client
         try:
-            request = google_requests.Request()
-            id_info = id_token.verify_oauth2_token(
-                raw_token,
-                request,
-                settings.GOOGLE_CLIENT_ID,
-                clock_skew_in_seconds=10
-            )
-
-            # Validate issuer
-            issuer = id_info.get("iss")
-            if issuer not in ["accounts.google.com", "https://accounts.google.com"]:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail=f"Invalid token issuer: {issuer}"
-                )
-
-            # Validate email_verified
-            if not id_info.get("email_verified", False):
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Google account email is not verified"
-                )
-
-            return {
-                "sub": id_info.get("sub"),
-                "email": id_info.get("email"),
-                "given_name": id_info.get("given_name"),
-                "family_name": id_info.get("family_name"),
-                "name": id_info.get("name"),
-                "picture": id_info.get("picture"),
-                "email_verified": id_info.get("email_verified", True),
-            }
-        except HTTPException:
-            raise
-        except Exception as id_token_err:
-            logger.info(f"Google ID token verification notice ({id_token_err}). Checking Google Userinfo endpoint...")
-
-        # Fallback: Query Google OAuth2 userinfo endpoint for standard access tokens
-        try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
                 resp = await client.get(
                     "https://www.googleapis.com/oauth2/v3/userinfo",
-                    headers={"Authorization": f"Bearer {raw_token}"},
-                    timeout=5.0
+                    headers={"Authorization": f"Bearer {raw_token_clean}"}
                 )
                 if resp.status_code == 200:
                     info = resp.json()
@@ -85,10 +90,12 @@ class AuthService:
                         "picture": info.get("picture"),
                         "email_verified": info.get("email_verified", True),
                     }
+                else:
+                    logger.warning(f"Google Userinfo API returned status {resp.status_code}: {resp.text}")
         except HTTPException:
             raise
         except Exception as http_err:
-            logger.error(f"Failed HTTP call to Google userinfo endpoint: {http_err}")
+            logger.error(f"HTTP call to Google userinfo endpoint failed: {http_err}")
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

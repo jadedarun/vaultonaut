@@ -78,6 +78,7 @@ export function AuthProvider({ children }) {
   // Process Google Login response with FastAPI backend
   const processGoogleProfile = useCallback(async (accessToken) => {
     setAuthStatus('authenticating');
+    setLoading(true);
     setErrorMessage(null);
 
     try {
@@ -98,7 +99,7 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Backend Google OAuth authentication error:', err);
       
-      const serverMsg = err.response?.data?.message || 'Authentication with backend failed. Please try again.';
+      const serverMsg = err.response?.data?.message || 'Authentication with backend failed. Please check backend server.';
       setAuthStatus('error');
       setErrorMessage(serverMsg);
       setToast({
@@ -111,6 +112,8 @@ export function AuthProvider({ children }) {
       tokenStorage.clearSession();
       setUser(null);
       setToken(null);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
