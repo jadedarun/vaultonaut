@@ -9,19 +9,52 @@ export function GoogleAuthProvider({ children }) {
   const [errorMessage, setErrorMessage] = useState(null);
   const [toast, setToast] = useState(null);
 
-  // Restore active session on mount
+  // Restore active session on mount & verify JWT with backend
   useEffect(() => {
-    try {
-      const savedSession = localStorage.getItem('vaultonaut_user_session');
-      if (savedSession) {
-        const parsedUser = JSON.parse(savedSession);
-        setUser(parsedUser);
-        setAuthStatus('authenticated');
+    async function restoreSession() {
+      try {
+        const savedJwt = localStorage.getItem('vaultonaut_jwt');
+        if (savedJwt) {
+          try {
+            const res = await fetch('http://localhost:8000/users/me', {
+              headers: { Authorization: `Bearer ${savedJwt}` },
+            });
+            if (res.ok) {
+              const backendUser = await res.json();
+              const mappedUser = {
+                uid: backendUser.google_id || backendUser.id,
+                firstName: backendUser.first_name || 'User',
+                lastName: backendUser.last_name || '',
+                displayName: backendUser.full_name || backendUser.first_name || 'Vaultonaut User',
+                email: backendUser.email,
+                photoURL: backendUser.profile_picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(backendUser.email)}`,
+                emailVerified: backendUser.email_verified,
+                provider: 'Google',
+                createdAt: backendUser.created_at,
+                lastLogin: backendUser.last_login,
+              };
+              setUser(mappedUser);
+              setAuthStatus('authenticated');
+              return;
+            }
+          } catch (e) {
+            console.warn('Backend API /users/me check failed. Falling back to cached local session:', e);
+          }
+        }
+
+        const savedSession = localStorage.getItem('vaultonaut_user_session');
+        if (savedSession) {
+          const parsedUser = JSON.parse(savedSession);
+          setUser(parsedUser);
+          setAuthStatus('authenticated');
+        }
+      } catch (err) {
+        console.error('Failed to parse saved user session:', err);
+        localStorage.removeItem('vaultonaut_user_session');
+        localStorage.removeItem('vaultonaut_jwt');
       }
-    } catch (err) {
-      console.error('Failed to parse saved user session:', err);
-      localStorage.removeItem('vaultonaut_user_session');
     }
+    restoreSession();
   }, []);
 
   const clearToast = useCallback(() => setToast(null), []);
@@ -30,7 +63,44 @@ export function GoogleAuthProvider({ children }) {
     try {
       setAuthStatus('authenticating');
       
-      // Fetch user profile from Google OAuth API
+      // First attempt: Connect to FastAPI backend
+      try {
+        const backendRes = await fetch('http://localhost:8000/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: accessToken }),
+        });
+
+        if (backendRes.ok) {
+          const authData = await backendRes.json();
+          const backendUser = authData.user;
+          const jwtToken = authData.access_token;
+
+          const userRecord = {
+            uid: backendUser.google_id || backendUser.id,
+            firstName: backendUser.first_name || 'User',
+            lastName: backendUser.last_name || '',
+            displayName: backendUser.full_name || backendUser.first_name || 'Vaultonaut User',
+            email: backendUser.email,
+            photoURL: backendUser.profile_picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(backendUser.email)}`,
+            emailVerified: backendUser.email_verified,
+            provider: 'Google',
+            createdAt: backendUser.created_at,
+            lastLogin: backendUser.last_login,
+          };
+
+          localStorage.setItem('vaultonaut_jwt', jwtToken);
+          localStorage.setItem('vaultonaut_user_session', JSON.stringify(userRecord));
+
+          setUser(userRecord);
+          setAuthStatus('loading_workspace');
+          return;
+        }
+      } catch (backendErr) {
+        console.warn('FastAPI backend connection warning, proceeding with client-side fallback:', backendErr);
+      }
+
+      // Client-side fallback if backend is offline
       const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
@@ -42,7 +112,6 @@ export function GoogleAuthProvider({ children }) {
       const profile = await res.json();
       const now = new Date().toISOString();
 
-      // Extract details
       const uid = profile.sub || 'google-user-' + Date.now();
       const email = profile.email || 'user@gmail.com';
       const displayName = profile.name || 'Google User';
@@ -51,44 +120,20 @@ export function GoogleAuthProvider({ children }) {
       const photoURL = profile.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(firstName)}`;
       const emailVerified = profile.email_verified ?? true;
 
-      // Database persistence simulation
-      let usersDb = {};
-      try {
-        usersDb = JSON.parse(localStorage.getItem('vaultonaut_users_db') || '{}');
-      } catch (e) {
-        usersDb = {};
-      }
+      const userRecord = {
+        uid,
+        firstName,
+        lastName,
+        displayName,
+        email,
+        photoURL,
+        emailVerified,
+        provider: 'Google',
+        createdAt: now,
+        lastLogin: now,
+        lastActive: now,
+      };
 
-      let userRecord = usersDb[email];
-      if (userRecord) {
-        // Returning User
-        userRecord = {
-          ...userRecord,
-          displayName,
-          photoURL,
-          lastLogin: now,
-          lastActive: now,
-        };
-      } else {
-        // First Time User
-        userRecord = {
-          uid,
-          firstName,
-          lastName,
-          displayName,
-          email,
-          photoURL,
-          emailVerified,
-          provider: 'Google',
-          createdAt: now,
-          lastLogin: now,
-          lastActive: now,
-        };
-      }
-
-      // Save user to DB & current session
-      usersDb[email] = userRecord;
-      localStorage.setItem('vaultonaut_users_db', JSON.stringify(usersDb));
       localStorage.setItem('vaultonaut_user_session', JSON.stringify(userRecord));
 
       setUser(userRecord);
@@ -112,7 +157,6 @@ export function GoogleAuthProvider({ children }) {
       if (tokenResponse?.access_token) {
         processGoogleProfile(tokenResponse.access_token);
       } else {
-        // Fallback for demo mode
         processDemoLogin();
       }
     },
@@ -173,8 +217,14 @@ export function GoogleAuthProvider({ children }) {
     }
   }, [googleLoginTrigger, processDemoLogin]);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await fetch('http://localhost:8000/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.warn('Backend logout request notice:', e);
+    }
     localStorage.removeItem('vaultonaut_user_session');
+    localStorage.removeItem('vaultonaut_jwt');
     setUser(null);
     setAuthStatus('idle');
     setErrorMessage(null);
