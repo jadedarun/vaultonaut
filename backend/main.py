@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.config.settings import settings
 from app.core.logging import setup_logging, logger
@@ -48,17 +47,18 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, unhandled_exception_handler)
 
-# Custom Request Logging Middleware
-app.add_middleware(RequestLoggingMiddleware)
-
-# CORS Middleware
+# CORS Middleware (Must be outer-most to handle preflight OPTIONS requests first)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Custom Request Logging Middleware
+app.add_middleware(RequestLoggingMiddleware)
 
 # Include Routers
 app.include_router(health_router)

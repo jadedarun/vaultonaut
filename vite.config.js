@@ -11,6 +11,22 @@ export default defineConfig({
       'geist/font/mono': path.resolve(__dirname, 'src/fonts/geist-mono.js'),
       'geist/font/pixel': path.resolve(__dirname, 'src/fonts/geist-pixel.js'),
     }
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      '/auth': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/users': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/health': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      }
+    }
   }
 })
-
