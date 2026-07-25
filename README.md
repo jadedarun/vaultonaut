@@ -52,18 +52,4 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-## Roadmap
 
-- [x] Frontend UI
-- [x] Google Authentication
-- [ ] Backend Foundation
-- [ ] Document Upload
-- [ ] RAG Pipeline
-- [ ] AI Chat
-- [ ] Learning Studio
-- [ ] Analytics
-- [ ] Deployment
-
-## License
-
-MIT License
