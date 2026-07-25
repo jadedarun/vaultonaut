@@ -1,35 +1,69 @@
-# Vaultonaut
+#  Vaultonaut
 
-Vaultonaut repository containing the React frontend and FastAPI backend.
+Vaultonaut is an AI-powered personal knowledge workspace that helps users organize, search, and interact with their documents using Retrieval-Augmented Generation (RAG).
 
-## Project Structure
+Upload your notes, research papers, or study materials, then chat with them, generate summaries, create flashcards, build quizzes, and learn more effectively through AI.
 
-- `src/` - React frontend application (Vite, TailwindCSS, React OAuth)
-- `backend/` - FastAPI backend application (PostgreSQL, SQLAlchemy, Alembic, JWT Authentication)
+## Features
 
+- Google Authentication
+- Personal Knowledge Vault
+- AI Document Chat
+- Semantic Search
+- Document Summaries
+- Flashcard Generation
+- Quiz Generation
+- Study Notes
+- Study Planner
+- Learning Analytics
 
-### 1. Frontend Setup
+## Tech Stack
 
-Install Node dependencies and start the Vite development server:
+**Frontend**
+- React
+- Vite
+- Tailwind CSS
+- Framer Motion
+
+**Backend**
+- FastAPI
+- PostgreSQL
+- SQLAlchemy
+
+**AI**
+- LangChain
+- ChromaDB
+- Sentence Transformers
+- Google Gemini
+
+## Getting Started
+
+### Frontend
 
 ```bash
 npm install
 npm run dev
 ```
 
-The frontend will run on http://localhost:5173
-
-### 2. Backend Setup
-
-See [backend/README.md](backend/README.md) for detailed backend setup and database configuration instructions.
+### Backend
 
 ```bash
-cd backend
-python -m venv venv
-.\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-alembic upgrade head
-uvicorn main:app --reload --port 8000
+uvicorn app.main:app --reload
 ```
 
-The backend API will run on http://localhost:8000
+## Roadmap
+
+- [x] Frontend UI
+- [x] Google Authentication
+- [ ] Backend Foundation
+- [ ] Document Upload
+- [ ] RAG Pipeline
+- [ ] AI Chat
+- [ ] Learning Studio
+- [ ] Analytics
+- [ ] Deployment
+
+## License
+
+MIT License
