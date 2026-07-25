@@ -15,6 +15,7 @@ from app.middleware.logging_middleware import RequestLoggingMiddleware
 from app.api.health import router as health_router
 from app.auth.routes import router as auth_router
 from app.users.routes import router as users_router
+from app.api.knowledge import router as knowledge_router
 
 
 @asynccontextmanager
@@ -64,6 +65,7 @@ app.add_middleware(RequestLoggingMiddleware)
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(knowledge_router)
 
 
 if __name__ == "__main__":

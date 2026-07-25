@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 from sqlalchemy import String, Boolean, DateTime, Text, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
 
 
@@ -51,6 +51,9 @@ class User(Base):
         DateTime(timezone=True),
         nullable=True
     )
+
+    # Relationships
+    knowledge_items = relationship("Knowledge", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User id={self.id} email='{self.email}'>"
