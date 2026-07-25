@@ -7,7 +7,6 @@ Vaultonaut repository containing the React frontend and FastAPI backend.
 - `src/` - React frontend application (Vite, TailwindCSS, React OAuth)
 - `backend/` - FastAPI backend application (PostgreSQL, SQLAlchemy, Alembic, JWT Authentication)
 
-## Getting Started
 
 ### 1. Frontend Setup
 
