@@ -17,6 +17,7 @@ class AuthService:
     async def verify_google_token(raw_token: str) -> Dict[str, Any]:
         """
         Verifies a Google OAuth token.
+        Validates issuer, audience, expiration, and email_verified status.
         Supports both ID tokens (Google JWT credential) and OAuth2 Access Tokens.
         """
         # Try ID Token verification first using Google official SDK
@@ -28,6 +29,22 @@ class AuthService:
                 settings.GOOGLE_CLIENT_ID,
                 clock_skew_in_seconds=10
             )
+
+            # Validate issuer
+            issuer = id_info.get("iss")
+            if issuer not in ["accounts.google.com", "https://accounts.google.com"]:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"Invalid token issuer: {issuer}"
+                )
+
+            # Validate email_verified
+            if not id_info.get("email_verified", False):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Google account email is not verified"
+                )
+
             return {
                 "sub": id_info.get("sub"),
                 "email": id_info.get("email"),
@@ -37,8 +54,10 @@ class AuthService:
                 "picture": id_info.get("picture"),
                 "email_verified": id_info.get("email_verified", True),
             }
+        except HTTPException:
+            raise
         except Exception as id_token_err:
-            logger.info(f"Google ID token verification failed ({id_token_err}). Falling back to Google Userinfo endpoint...")
+            logger.info(f"Google ID token verification notice ({id_token_err}). Checking Google Userinfo endpoint...")
 
         # Fallback: Query Google OAuth2 userinfo endpoint for standard access tokens
         try:
@@ -50,6 +69,13 @@ class AuthService:
                 )
                 if resp.status_code == 200:
                     info = resp.json()
+                    
+                    if not info.get("email_verified", True):
+                        raise HTTPException(
+                            status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Google account email is not verified"
+                        )
+
                     return {
                         "sub": info.get("sub"),
                         "email": info.get("email"),
@@ -59,6 +85,8 @@ class AuthService:
                         "picture": info.get("picture"),
                         "email_verified": info.get("email_verified", True),
                     }
+        except HTTPException:
+            raise
         except Exception as http_err:
             logger.error(f"Failed HTTP call to Google userinfo endpoint: {http_err}")
 
@@ -84,6 +112,12 @@ class AuthService:
                 detail="Google token payload missing essential profile fields (sub, email)"
             )
 
+        first_name = google_profile.get("given_name")
+        last_name = google_profile.get("family_name")
+        full_name = google_profile.get("name") or f"{first_name or ''} {last_name or ''}".strip()
+        picture = google_profile.get("picture")
+        email_verified = google_profile.get("email_verified", True)
+
         # 1. Lookup user in DB
         user = UserService.get_by_google_id(db, google_id)
         if not user:
@@ -91,16 +125,19 @@ class AuthService:
             user = UserService.get_by_email(db, email)
 
         if user:
-            # Returning user -> Update login time
-            user = UserService.update_last_login(db, user)
+            # Returning user -> Update profile & login time
+            user = UserService.update_user_profile(
+                db=db,
+                user=user,
+                first_name=first_name,
+                last_name=last_name,
+                full_name=full_name,
+                profile_picture=picture,
+                email_verified=email_verified
+            )
             logger.info(f"User authenticated successfully: {user.email}")
         else:
             # First time user -> Create record
-            first_name = google_profile.get("given_name")
-            last_name = google_profile.get("family_name")
-            full_name = google_profile.get("name") or f"{first_name or ''} {last_name or ''}".strip()
-            picture = google_profile.get("picture")
-
             user_create = UserCreate(
                 google_id=google_id,
                 email=email,
@@ -108,13 +145,17 @@ class AuthService:
                 last_name=last_name,
                 full_name=full_name,
                 profile_picture=picture,
-                email_verified=google_profile.get("email_verified", True)
+                email_verified=email_verified
             )
             user = UserService.create_user(db, user_create)
             logger.info(f"Created new user account: {user.email}")
 
         # 2. Issue JWT token
-        jwt_token = create_access_token(user_id=user.id, email=user.email)
+        jwt_token = create_access_token(
+            user_id=user.id,
+            email=user.email,
+            name=user.full_name or user.first_name or ""
+        )
 
         return {
             "access_token": jwt_token,

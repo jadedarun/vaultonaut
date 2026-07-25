@@ -37,8 +37,28 @@ class UserService:
         return db_user
 
     @staticmethod
-    def update_last_login(db: Session, user: User) -> User:
+    def update_user_profile(
+        db: Session,
+        user: User,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+        full_name: Optional[str] = None,
+        profile_picture: Optional[str] = None,
+        email_verified: Optional[bool] = None
+    ) -> User:
         user.last_login = datetime.now(timezone.utc)
+        if first_name is not None:
+            user.first_name = first_name
+        if last_name is not None:
+            user.last_name = last_name
+        if full_name is not None:
+            user.full_name = full_name
+        if profile_picture is not None:
+            user.profile_picture = profile_picture
+        if email_verified is not None:
+            user.email_verified = email_verified
+            
         db.commit()
         db.refresh(user)
         return user
+

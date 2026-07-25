@@ -26,18 +26,21 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def create_access_token(user_id: uuid.UUID, email: str, expires_delta: Optional[timedelta] = None) -> str:
-    """Generates a signed JWT access token."""
+def create_access_token(user_id: uuid.UUID, email: str, name: Optional[str] = None, expires_delta: Optional[timedelta] = None) -> str:
+    """Generates a signed JWT access token containing user_id, email, name, exp, and iat."""
+    now = datetime.now(timezone.utc)
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = now + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode = {
         "sub": str(user_id),
+        "user_id": str(user_id),
         "email": email,
+        "name": name or "",
         "exp": expire,
-        "iat": datetime.now(timezone.utc)
+        "iat": now
     }
 
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
