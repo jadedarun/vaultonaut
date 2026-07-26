@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { tokenStorage } from './tokenStorage';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('vaultonaut_token');
+  const token = tokenStorage.getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 

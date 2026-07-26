@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   Shield,
   HardDrive,
@@ -45,6 +45,7 @@ import AIWorkspaceSection from './components/sections/AIWorkspaceSection';
 import LearningStudioSection from './components/sections/LearningStudioSection';
 import AnalyticsSection from './components/sections/AnalyticsSection';
 import SettingsSection from './components/sections/SettingsSection';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { GeistPixelSquare, GeistPixelGrid, GeistPixelCircle, GeistPixelTriangle, GeistPixelLine } from 'geist/font/pixel';
@@ -92,12 +93,36 @@ const QUIZ_QUESTION = {
 
 export default function App() {
   const { user, logout } = useGoogleAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // State
   const [activeTab, setActiveTab] = useState(0);
   const [turboMode, setTurboMode] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+
+  // Sync URL routes to activeTab
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/') {
+      navigate('/dashboard', { replace: true });
+    } else if (path.startsWith('/dashboard')) {
+      setActiveTab(0);
+    } else if (path.startsWith('/knowledge-vault')) {
+      setActiveTab(1);
+    } else if (path.startsWith('/upload-center')) {
+      setActiveTab(2);
+    } else if (path.startsWith('/ai-workspace')) {
+      setActiveTab(3);
+    } else if (path.startsWith('/learning-studio')) {
+      setActiveTab(4);
+    } else if (path.startsWith('/analytics')) {
+      setActiveTab(5);
+    } else if (path.startsWith('/settings')) {
+      setActiveTab(6);
+    }
+  }, [location.pathname, navigate]);
   
   // Vault Data State
   const [files, setFiles] = useState(INITIAL_FILES);
@@ -140,7 +165,16 @@ export default function App() {
 
   // Handle Tab Switch
   const handleTabChange = (index) => {
-    setActiveTab(index);
+    const paths = [
+      '/dashboard',
+      '/knowledge-vault',
+      '/upload-center',
+      '/ai-workspace',
+      '/learning-studio',
+      '/analytics',
+      '/settings'
+    ];
+    navigate(paths[index]);
   };
 
   // Mock Ingestion Handler

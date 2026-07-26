@@ -1,1 +1,0 @@
-PyMuPDF extracts text from PDF documents. Python-docx parses Word documents.

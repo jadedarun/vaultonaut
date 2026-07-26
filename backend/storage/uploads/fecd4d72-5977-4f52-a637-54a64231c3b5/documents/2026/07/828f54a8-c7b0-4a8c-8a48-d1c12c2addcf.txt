@@ -1,1 +1,0 @@
-Vaultonaut is a personal knowledge operating system built with FastAPI and React.

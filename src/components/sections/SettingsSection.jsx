@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AISettings from '../ai/settings/AISettings';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -14,7 +15,30 @@ import {
 } from 'lucide-react';
 
 export default function SettingsSection({ user, logout }) {
-  const [activeTab, setActiveTab] = useState('ai'); // ai | profile | appearance | notifications | security | storage | about
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/settings/')) {
+      return path.substring('/settings/'.length);
+    }
+    return 'ai';
+  });
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/settings/')) {
+      const subTab = path.substring('/settings/'.length);
+      setActiveTab(subTab);
+    } else if (path === '/settings') {
+      setActiveTab('ai');
+    }
+  }, [location.pathname]);
+
+  const handleSubTabChange = (tabId) => {
+    setActiveTab(tabId);
+    navigate(`/settings/${tabId}`);
+  };
 
   const settingsTabs = [
     { id: 'ai', label: 'AI Workspace & Diagnostics', icon: Cpu },
@@ -55,7 +79,7 @@ export default function SettingsSection({ user, logout }) {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleSubTabChange(tab.id)}
               className={isActive ? 'btn-white-solid' : 'btn-white-outline'}
               style={{ fontSize: '0.85rem', padding: '0.45rem 1rem', borderRadius: '0.5rem', whiteSpace: 'nowrap' }}
             >
