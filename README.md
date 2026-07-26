@@ -111,8 +111,3 @@ vaultonaut/
 
 ---
 
-## 📄 License & Acknowledgements
-
-This project is licensed under the [MIT License](file:///d:/vaultonaut/LICENSE).
-
-Designed & Engineered with ❤️ by the **Vaultonaut AI Engineering Team**.
