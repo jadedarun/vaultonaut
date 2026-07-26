@@ -90,6 +90,7 @@ class Knowledge(Base):
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="knowledge_items")
+    chunks = relationship("DocumentChunk", back_populates="knowledge", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<Knowledge id={self.id} title='{self.title[:20]}' user_id={self.user_id}>"

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import AISettings from '../ai/settings/AISettings';
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -13,12 +14,12 @@ import {
 } from 'lucide-react';
 
 export default function SettingsSection({ user, logout }) {
-  const [activeTab, setActiveTab] = useState('profile'); // profile | appearance | ai | notifications | security | storage | about
+  const [activeTab, setActiveTab] = useState('ai'); // ai | profile | appearance | notifications | security | storage | about
 
   const settingsTabs = [
+    { id: 'ai', label: 'AI Workspace & Diagnostics', icon: Cpu },
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'appearance', label: 'Appearance', icon: Moon },
-    { id: 'ai', label: 'AI Preferences', icon: Cpu },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Security', icon: ShieldCheck },
     { id: 'storage', label: 'Storage', icon: HardDrive },
@@ -37,12 +38,12 @@ export default function SettingsSection({ user, logout }) {
       <div className="glass-card" style={{ padding: '1.5rem' }}>
         <div className="card-header-row">
           <h2 className="card-title">
-            <SettingsIcon size={20} className="logo-icon" /> Settings & Account
+            <SettingsIcon size={20} className="logo-icon" /> Settings & Diagnostics Hub
           </h2>
           <span className="badge-tag">System Configuration</span>
         </div>
         <p className="card-desc" style={{ marginTop: '0.4rem' }}>
-          Manage your user profile, AI model parameters, vector database storage, and system security controls.
+          Manage your user profile, AI model parameters, Developer Mode telemetry, vector database diagnostics, and security controls.
         </p>
       </div>
 
@@ -65,7 +66,12 @@ export default function SettingsSection({ user, logout }) {
         })}
       </div>
 
-      {/* Tab 1: Profile */}
+      {/* Tab 1: AI Workspace & Diagnostics */}
+      {activeTab === 'ai' && (
+        <AISettings />
+      )}
+
+      {/* Tab 2: Profile */}
       {activeTab === 'profile' && (
         <div className="glass-card" style={{ padding: '1.8rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
@@ -118,7 +124,7 @@ export default function SettingsSection({ user, logout }) {
         </div>
       )}
 
-      {/* Tab 2: Appearance */}
+      {/* Tab 3: Appearance */}
       {activeTab === 'appearance' && (
         <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>Appearance & Fonts</h3>
@@ -130,23 +136,6 @@ export default function SettingsSection({ user, logout }) {
             <div style={{ padding: '0.9rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>Typography Standard</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--color-arctic-3)' }}>Geist Sans & Geist Mono</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 3: AI Preferences */}
-      {activeTab === 'ai' && (
-        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>RAG & Vector Search Settings</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-            <div style={{ padding: '0.9rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>Embedding Model</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--color-arctic-3)' }}>sentence-transformers/all-MiniLM-L6-v2</span>
-            </div>
-            <div style={{ padding: '0.9rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>Chunking Size</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--color-arctic-3)' }}>500 characters / 50 overlap</span>
             </div>
           </div>
         </div>

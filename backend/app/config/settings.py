@@ -19,6 +19,13 @@ class Settings(BaseSettings):
     # Google OAuth
     GOOGLE_CLIENT_ID: str = "1049489293832-ool2v684u0df5a34cc1jnjeg3t2mv35u.apps.googleusercontent.com"
 
+    # Gemini & RAG Configuration
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-1.5-flash"
+    RAG_SIMILARITY_THRESHOLD: float = 0.75
+    RAG_TOP_K: int = 5
+    RAG_TEMPERATURE: float = 0.2
+
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
 

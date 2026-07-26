@@ -26,6 +26,7 @@ export default function KnowledgeCard({ item, onEdit, onDelete, onToggleFav, onT
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.8rem', marginBottom: '0.6rem' }}>
           <div style={{ display: 'flex', itemsCenter: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <span className="badge-tag">{item.category}</span>
+            <span className="badge-tag" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>✨ AI Ready</span>
             {item.pinned && (
               <span className="badge-tag" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}>📌 Pinned</span>
             )}

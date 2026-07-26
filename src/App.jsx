@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { useGoogleAuth } from './context/GoogleAuthContext';
 import { KnowledgeProvider } from './context/KnowledgeContext';
+import { DocumentProvider } from './context/DocumentContext';
 import GradientText from './components/GradientText';
 import LineSidebar from './components/LineSidebar';
 import GradientBlinds from './components/GradientBlinds';
@@ -289,7 +290,8 @@ export default function App() {
 
   return (
     <KnowledgeProvider>
-      <OnboardingFlow>
+      <DocumentProvider>
+        <OnboardingFlow>
       <div className="app-container">
       {/* Background Animated Gradient Blinds */}
       <div className="bg-canvas-container">
@@ -568,6 +570,7 @@ export default function App() {
       )}
       </div>
     </OnboardingFlow>
-  </KnowledgeProvider>
+  </DocumentProvider>
+</KnowledgeProvider>
   );
 }

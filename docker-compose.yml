@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vaultonaut_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: vaultonaut_user
+      POSTGRES_PASSWORD: vaultonaut_password
+      POSTGRES_DB: vaultonaut_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vaultonaut_user -d vaultonaut_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vaultonaut_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://vaultonaut_user:vaultonaut_password@postgres:5432/vaultonaut_db
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=gemini-1.5-flash
+      - RAG_TOP_K=5
+      - RAG_SIMILARITY_THRESHOLD=0.75
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - chroma_data:/app/storage/chroma_db
+      - uploads_data:/app/uploads
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vaultonaut_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  chroma_data:
+  uploads_data:

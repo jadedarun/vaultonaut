@@ -12,10 +12,15 @@ from app.utils.exceptions import (
     unhandled_exception_handler,
 )
 from app.middleware.logging_middleware import RequestLoggingMiddleware
+from app.middleware.rate_limit import RateLimitMiddleware
+from app.middleware.structured_logging import StructuredLoggingMiddleware
 from app.api.health import router as health_router
 from app.auth.routes import router as auth_router
 from app.users.routes import router as users_router
 from app.api.knowledge import router as knowledge_router
+from app.api.documents import router as documents_router
+from app.api.search import router as search_router
+from app.api.chat import router as chat_router
 
 
 @asynccontextmanager
@@ -24,7 +29,7 @@ async def lifespan(app: FastAPI):
     setup_logging()
     logger.info(f"Starting {settings.PROJECT_NAME} (v{settings.VERSION}) in [{settings.ENVIRONMENT}] mode.")
     
-    # Ensure uploads directory exists for future milestones
+    # Ensure uploads directory exists
     uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
     os.makedirs(uploads_dir, exist_ok=True)
     
@@ -58,7 +63,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Custom Request Logging Middleware
+# Custom Request Logging, Rate Limiting & Structured Logging Middleware
+app.add_middleware(StructuredLoggingMiddleware)
+app.add_middleware(RateLimitMiddleware, requests_per_minute=200)
 app.add_middleware(RequestLoggingMiddleware)
 
 # Include Routers
@@ -66,6 +73,9 @@ app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(knowledge_router)
+app.include_router(documents_router)
+app.include_router(search_router)
+app.include_router(chat_router)
 
 
 if __name__ == "__main__":

@@ -17,20 +17,22 @@ import {
 } from 'lucide-react';
 import GradientText from '../GradientText';
 import { useKnowledge } from '../../context/KnowledgeContext';
+import { useDocuments } from '../../context/DocumentContext';
 
 export default function DashboardSection({ user, onNavigate }) {
   const { items, total } = useKnowledge();
+  const { documents, stats: docStats } = useDocuments();
 
   const totalWords = items.reduce((acc, cur) => acc + (cur.word_count || 0), 0);
   const totalFavs = items.filter(i => i.favorite).length;
 
   const stats = [
-    { label: 'Total Knowledge Items', value: total || items.length, change: 'Authenticated Vault' },
-    { label: 'Words Indexed', value: totalWords.toLocaleString(), change: 'Auto Word Count' },
-    { label: 'Favorite Documents', value: totalFavs, change: 'Starred Items' },
-    { label: 'Flashcards', value: '48', change: '85% mastery' },
-    { label: 'Quizzes Taken', value: '12', change: '92% avg score' },
-    { label: 'Storage Mode', value: 'PostgreSQL / SQLite', change: 'Active' }
+    { label: 'Knowledge Entries', value: total || items.length, change: 'Authenticated Vault' },
+    { label: 'Vectors Indexed', value: docStats.vectors_stored || 0, change: 'ChromaDB Local Store' },
+    { label: 'Chunks Created', value: docStats.chunks_created || 0, change: '800ch Recursive Splitter' },
+    { label: 'Embedding Model', value: docStats.embedding_model || 'all-MiniLM-L6-v2', change: '384 Dense Dimensions' },
+    { label: 'Storage Used', value: `${docStats.total_storage_mb || 0} MB`, change: 'Secure Files' },
+    { label: 'AI Ready Documents', value: docStats.ai_ready_count || documents.length, change: 'Vector Search Active' }
   ];
 
   const quickActions = [

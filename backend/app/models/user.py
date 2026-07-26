@@ -54,6 +54,9 @@ class User(Base):
 
     # Relationships
     knowledge_items = relationship("Knowledge", back_populates="user", cascade="all, delete-orphan")
+    documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
+    chunks = relationship("DocumentChunk", back_populates="user", cascade="all, delete-orphan")
+    conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User id={self.id} email='{self.email}'>"

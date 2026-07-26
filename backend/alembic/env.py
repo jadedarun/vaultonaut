@@ -14,10 +14,20 @@ from app.config.settings import settings
 from app.database.base import Base
 from app.models.user import User  # noqa: F401 to ensure model is registered
 
-config = context.config
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
-# Dynamic database URL override from app settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+try:
+    from sqlalchemy import create_engine
+    test_engine = create_engine(db_url, pool_pre_ping=True)
+    with test_engine.connect() as conn:
+        pass
+except Exception:
+    db_url = "sqlite:///./vaultonaut_local.db"
+
+config = context.config
+config.set_main_option("sqlalchemy.url", db_url)
 
 if config.config_file_name:
     fileConfig(config.config_file_name)
