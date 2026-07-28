@@ -93,11 +93,14 @@ export const AIWorkspaceProvider = ({ children }) => {
     updateThreadMessages(activeConversationId, currentMsgs);
 
     try {
+      const topK = parseInt(localStorage.getItem('vaultonaut_top_k')) || 5;
+      const threshold = parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.75;
+
       const response = await chatApi.sendMessage({
         query: userQuery,
         conversation_id: activeConversationId,
-        top_k: 5,
-        similarity_threshold: 0.75
+        top_k: topK,
+        similarity_threshold: threshold
       }, { signal });
 
       if (response) {
