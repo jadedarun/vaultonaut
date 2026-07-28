@@ -22,10 +22,10 @@ class DocumentChunk(Base):
         default=uuid.uuid4,
         index=True
     )
-    document_id: Mapped[uuid.UUID] = mapped_column(
+    document_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("documents.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True
     )
     knowledge_id: Mapped[Optional[uuid.UUID]] = mapped_column(
