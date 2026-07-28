@@ -3,7 +3,7 @@ import uuid
 import hashlib
 import re
 from datetime import datetime
-from typing import Tuple
+from typing import Tuple, Optional
 from fastapi import UploadFile, HTTPException, status
 
 BASE_STORAGE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "storage", "uploads")
