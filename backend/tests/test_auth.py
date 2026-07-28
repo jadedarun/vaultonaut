@@ -33,3 +33,13 @@ def test_logout_endpoint(client):
     response = client.post("/auth/logout")
     assert response.status_code == 200
     assert response.json() == {"success": True, "message": "Logged out successfully"}
+
+
+def test_demo_login_success(client):
+    response = client.post("/auth/demo")
+    assert response.status_code == 200
+    data = response.json()
+    assert "access_token" in data
+    assert data["token_type"] == "bearer"
+    assert data["user"]["email"] == "arun@gmail.com"
+    assert data["user"]["google_id"] == "google-uid-demo-12345"

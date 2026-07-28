@@ -145,28 +145,40 @@ export function AuthProvider({ children }) {
   });
 
   // Fallback / Demo Login Handler for offline dev
-  const processDemoLogin = useCallback((customName) => {
+  const processDemoLogin = useCallback(async () => {
     setAuthStatus('authenticating');
-    setTimeout(() => {
-      const nameToUse = customName || 'Arun';
-      const now = new Date().toISOString();
-      const demoUser = {
-        uid: 'google-uid-demo-12345',
-        firstName: nameToUse,
-        lastName: 'Developer',
-        displayName: `${nameToUse} Developer`,
-        email: `${nameToUse.toLowerCase()}@gmail.com`,
-        photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nameToUse)}`,
-        emailVerified: true,
-        provider: 'Google',
-        createdAt: now,
-        lastLogin: now,
-      };
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const authResponse = await authApi.loginWithDemo();
+      const jwtToken = authResponse.access_token;
+      const backendUser = authResponse.user;
+      const formattedUser = formatUserData(backendUser);
 
-      tokenStorage.setUser(demoUser);
-      setUser(demoUser);
+      // Persist token and user in storage
+      tokenStorage.setToken(jwtToken);
+      tokenStorage.setUser(formattedUser);
+
+      setToken(jwtToken);
+      setUser(formattedUser);
       setAuthStatus('authenticated');
-    }, 600);
+    } catch (err) {
+      console.error('Offline/Demo login failed on backend:', err);
+      const serverMsg = err.response?.data?.detail || err.response?.data?.message || 'Demo authentication failed. Please check backend server.';
+      setAuthStatus('error');
+      setErrorMessage(serverMsg);
+      setToast({
+        type: 'error',
+        title: 'Demo Sign-In Failed',
+        message: serverMsg,
+        onRetry: () => processDemoLogin(),
+      });
+      tokenStorage.clearSession();
+      setUser(null);
+      setToken(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const loginWithGoogle = useCallback(() => {

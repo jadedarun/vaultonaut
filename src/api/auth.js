@@ -14,6 +14,14 @@ export const authApi = {
   },
 
   /**
+   * Authenticates developer bypass locally
+   */
+  loginWithDemo: async () => {
+    const response = await apiClient.post('/auth/demo');
+    return response.data;
+  },
+
+  /**
    * Fetches current authenticated user profile
    */
   getCurrentUser: async () => {

@@ -33,3 +33,45 @@ async def logout():
         success=True,
         message="Logged out successfully"
     )
+
+
+@router.post("/demo", response_model=AuthTokenResponse, summary="Demo/Developer Bypass Authentication")
+async def demo_login(db: Session = Depends(get_db)):
+    """
+    Authenticates a mock developer user for offline development.
+    Creates a PostgreSQL user if it doesn't exist and returns a valid JWT.
+    """
+    from app.services.user_service import UserService
+    from app.schemas.user import UserCreate
+    from app.core.security import create_access_token
+    
+    google_id = "google-uid-demo-12345"
+    email = "arun@gmail.com"
+    
+    user = UserService.get_by_google_id(db, google_id)
+    if not user:
+        user = UserService.get_by_email(db, email)
+        
+    if not user:
+        user_create = UserCreate(
+            google_id=google_id,
+            email=email,
+            first_name="Arun",
+            last_name="Developer",
+            full_name="Arun Developer",
+            profile_picture="",
+            email_verified=True
+        )
+        user = UserService.create_user(db, user_create)
+        
+    jwt_token = create_access_token(
+        user_id=user.id,
+        email=user.email,
+        name=user.full_name or user.first_name or ""
+    )
+    
+    return AuthTokenResponse(
+        access_token=jwt_token,
+        token_type="bearer",
+        user=user
+    )
