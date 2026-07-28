@@ -46,6 +46,15 @@ def create_knowledge(
     db.add(item)
     db.commit()
     db.refresh(item)
+
+    # Trigger vector indexing
+    try:
+        from app.services import vector_sync_service
+        vector_sync_service.process_knowledge_indexing(db, item, item.content)
+    except Exception as err:
+        from app.core.logging import logger
+        logger.error(f"Failed to vector index knowledge item {item.id}: {err}")
+
     return item
 
 
@@ -126,10 +135,13 @@ def update_knowledge(
     data: KnowledgeUpdate
 ) -> Knowledge:
     item = get_knowledge_by_id(db, knowledge_id, user_id)
+    content_changed = False
 
     if data.title is not None:
         item.title = data.title.strip()
     if data.content is not None:
+        if item.content != data.content:
+            content_changed = True
         item.content = data.content
         item.word_count = calculate_word_count(data.content)
         item.reading_time = calculate_reading_time(item.word_count)
@@ -148,6 +160,15 @@ def update_knowledge(
 
     db.commit()
     db.refresh(item)
+
+    if content_changed:
+        try:
+            from app.services import vector_sync_service
+            vector_sync_service.rebuild_knowledge_vectors(db, item, item.content)
+        except Exception as err:
+            from app.core.logging import logger
+            logger.error(f"Failed to rebuild vector index for knowledge item {item.id}: {err}")
+
     return item
 
 
@@ -157,6 +178,15 @@ def delete_knowledge(
     user_id: uuid.UUID
 ) -> bool:
     item = get_knowledge_by_id(db, knowledge_id, user_id)
+    
+    # Clean up associated vector embeddings in ChromaDB
+    try:
+        from app.services import vector_sync_service
+        vector_sync_service.delete_knowledge_vectors(db, user_id, knowledge_id)
+    except Exception as err:
+        from app.core.logging import logger
+        logger.error(f"Failed to delete vector index for knowledge item {knowledge_id}: {err}")
+
     db.delete(item)
     db.commit()
     return True

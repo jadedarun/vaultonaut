@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any
 from sqlalchemy.orm import Session
 
 from app.models.document import Document
@@ -129,3 +129,88 @@ def rebuild_document_vectors(db: Session, document: Document, text_content: str)
     """
     delete_document_vectors(db, document.user_id, document.id, document.knowledge_id)
     return process_ai_indexing(db, document, text_content)
+
+
+def process_knowledge_indexing(db: Session, knowledge: Any, text_content: str) -> List[DocumentChunk]:
+    """
+    Executes AI Preprocessing, Chunking, Embedding & Vector Indexing for raw knowledge items (notes).
+    """
+    cleaned_text = preprocess_text(text_content)
+    raw_chunks = default_chunking_service.chunk_text(cleaned_text)
+
+    if not raw_chunks:
+        return []
+
+    # Create DocumentChunk DB objects
+    db_chunks = []
+    for c_data in raw_chunks:
+        db_chunk = DocumentChunk(
+            id=uuid.uuid4(),
+            document_id=None,  # Nullable!
+            knowledge_id=knowledge.id,
+            user_id=knowledge.user_id,
+            chunk_index=c_data["chunk_index"],
+            chunk_text=c_data["chunk_text"],
+            token_count=c_data["token_count"],
+            character_count=c_data["character_count"],
+            metadata_json={
+                "original_filename": "",
+                "file_extension": ".md",
+                "chunk_index": c_data["chunk_index"]
+            }
+        )
+        db.add(db_chunk)
+        db_chunks.append(db_chunk)
+        c_data["db_chunk_id"] = db_chunk.id
+
+    db.commit()
+    for chunk_obj in db_chunks:
+        db.refresh(chunk_obj)
+
+    # Upsert into ChromaDB
+    doc_metadata = {
+        "title": knowledge.title,
+        "original_filename": "",
+        "file_extension": ".md",
+        "upload_date": knowledge.created_at.isoformat() if knowledge.created_at else datetime.utcnow().isoformat()
+    }
+
+    vector_ids = vector_store_service.upsert_chunks(
+        user_id=str(knowledge.user_id),
+        document_id=None,
+        knowledge_id=str(knowledge.id),
+        chunks=raw_chunks,
+        embeddings=embedding_service.generate_embeddings([c["chunk_text"] for c in raw_chunks]),
+        document_metadata=doc_metadata
+    )
+
+    # Save Embedding DB models
+    for db_chunk, v_id in zip(db_chunks, vector_ids):
+        db_emb = Embedding(
+            id=uuid.uuid4(),
+            chunk_id=db_chunk.id,
+            embedding_model="all-MiniLM-L6-v2",
+            embedding_dimension=384,
+            vector_id=v_id
+        )
+        db.add(db_emb)
+
+    db.commit()
+    return db_chunks
+
+
+def delete_knowledge_vectors(db: Session, user_id: uuid.UUID, knowledge_id: uuid.UUID):
+    """
+    Deletes all associated chunks & vectors for a knowledge item from ChromaDB and PostgreSQL.
+    """
+    vector_store_service.delete_chunks_by_knowledge(str(user_id), str(knowledge_id))
+    db.query(DocumentChunk).filter(DocumentChunk.knowledge_id == knowledge_id).delete(synchronize_session=False)
+    db.commit()
+
+
+def rebuild_knowledge_vectors(db: Session, knowledge: Any, text_content: str):
+    """
+    Purges old chunks/vectors and re-indexes the knowledge note content.
+    """
+    delete_knowledge_vectors(db, knowledge.user_id, knowledge.id)
+    return process_knowledge_indexing(db, knowledge, text_content)
