@@ -444,7 +444,7 @@ export default function App() {
         </header>
 
         {/* Dashboard Workspace Views */}
-        <div className="dashboard-view">
+        <div className={`dashboard-view ${activeTab === 3 ? 'ai-workspace-tab-view' : ''}`}>
           <AnimatePresence mode="wait">
             {activeTab === 0 && (
               <DashboardSection key="dashboard" user={user} onNavigate={handleTabChange} files={files} />

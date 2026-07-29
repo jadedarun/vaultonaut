@@ -16,7 +16,8 @@ class CitationService:
                 "chunk_index": cit.get("chunk_index", 0),
                 "similarity_score": round(float(cit.get("similarity_score", 0.0)), 4),
                 "vector_id": cit.get("vector_id"),
-                "snippet": cit.get("snippet", "")
+                "snippet": cit.get("snippet", ""),
+                "chunk_text": cit.get("chunk_text", "")
             })
         return formatted
 

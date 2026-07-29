@@ -9,7 +9,7 @@ import { useStreaming } from '../hooks/useStreaming';
 import * as chatApi from '../services/chatApi';
 import ToastContainer from '../components/ai/ToastContainer';
 
-const AIWorkspaceContext = createContext(null);
+export const AIWorkspaceContext = createContext(null);
 
 export const useAIWorkspace = () => {
   const context = useContext(AIWorkspaceContext);

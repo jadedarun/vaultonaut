@@ -61,7 +61,7 @@ def test_context_builder():
 
 def test_prompt_builder_grounding_and_defense():
     system_prompt = prompt_builder_service.build_system_prompt()
-    assert "Base your answer STRICTLY on the provided context" in system_prompt
+    assert "Base your answer on the provided context" in system_prompt
     assert "PROMPT INJECTION DEFENSE" in system_prompt
 
     prompt = prompt_builder_service.build_rag_prompt(

@@ -11,7 +11,7 @@ export default function AIWorkspace() {
       className="ai-workspace-container"
       style={{
         display: 'flex',
-        height: 'calc(100vh - 70px)',
+        height: '100%',
         width: '100%',
         gap: '1rem',
         padding: '1rem',

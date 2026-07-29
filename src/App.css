@@ -853,3 +853,11 @@
 .line-sidebar {
   width: 100%;
 }
+
+/* AI Workspace parent styling overrides to solve the nested scrolling scroll bug */
+.dashboard-view.ai-workspace-tab-view {
+  padding: 0 !important;
+  overflow: hidden !important;
+  height: calc(100vh - 80px) !important;
+}
+

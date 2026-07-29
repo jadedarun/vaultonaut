@@ -40,10 +40,21 @@ class GeminiProvider(BaseLLMProvider):
         max_tokens: Optional[int] = None,
         model_override: Optional[str] = None
     ) -> Dict[str, Any]:
+        # Check and load dynamic API Key configuration if not configured yet
+        if not self._configured or not self.api_key:
+            self.api_key = settings.GEMINI_API_KEY
+            self.model_name = settings.GEMINI_MODEL or "gemini-1.5-flash"
+            if genai is not None and self.api_key:
+                try:
+                    genai.configure(api_key=self.api_key)
+                    self._configured = True
+                except Exception as err:
+                    logger.error(f"Failed to configure Gemini SDK dynamically: {err}")
+
         start_time = time.time()
         active_model_name = model_override or self.model_name
 
-        if genai is None or not self.api_key:
+        if genai is None or not self.api_key or not self._configured:
             logger.warning("Gemini SDK or API key not available.")
             raise RuntimeError("Gemini API key is not configured in backend environment settings.")
 

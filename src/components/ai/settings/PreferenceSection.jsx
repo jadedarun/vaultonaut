@@ -1,8 +1,10 @@
+import { useContext } from 'react';
 import { Download, Sliders, ShieldCheck } from 'lucide-react';
-import { useAIWorkspace } from '../../../context/AIWorkspaceContext';
+import { AIWorkspaceContext } from '../../../context/AIWorkspaceContext';
 
 export default function PreferenceSection() {
-  const { showToast } = useAIWorkspace();
+  const context = useContext(AIWorkspaceContext);
+  const showToast = context ? context.showToast : (msg) => alert(msg);
 
   const handleExport = (format) => {
     showToast(`Preparing conversation export in ${format} format...`, 'info');

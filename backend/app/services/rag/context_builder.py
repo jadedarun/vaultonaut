@@ -56,7 +56,8 @@ class ContextBuilderService:
                 "chunk_index": chunk_idx,
                 "similarity_score": score,
                 "vector_id": chunk.get("vector_id"),
-                "snippet": chunk.get("chunk_text", "")[:200]
+                "snippet": chunk.get("chunk_text", "")[:200],
+                "chunk_text": chunk.get("chunk_text", "")
             })
 
         formatted_context_str = "\n\n".join(context_blocks)

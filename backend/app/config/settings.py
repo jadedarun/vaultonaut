@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # Gemini & RAG Configuration
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-1.5-flash"
-    RAG_SIMILARITY_THRESHOLD: float = 0.75
+    RAG_SIMILARITY_THRESHOLD: float = 0.45
     RAG_TOP_K: int = 5
     RAG_TEMPERATURE: float = 0.2
 
