@@ -82,8 +82,9 @@ export async function getAISettings() {
       localStorage.setItem('vaultonaut_top_k', backendData.rag_top_k.toString());
     }
     const storedThreshold = localStorage.getItem('vaultonaut_similarity_threshold');
-    if (!storedThreshold || storedThreshold === '0.75') {
-      localStorage.setItem('vaultonaut_similarity_threshold', backendData.rag_similarity_threshold.toString());
+    const parsedThreshold = Number(storedThreshold);
+    if (!storedThreshold || isNaN(parsedThreshold) || parsedThreshold === 0.75 || parsedThreshold > 1.0 || parsedThreshold < 0.0) {
+      localStorage.setItem('vaultonaut_similarity_threshold', (backendData.rag_similarity_threshold || 0.45).toString());
     }
 
     return {

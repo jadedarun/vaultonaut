@@ -99,7 +99,8 @@ export default function App() {
   // Onboarding & LocalStorage Defaults Migration
   useEffect(() => {
     const currentThreshold = localStorage.getItem('vaultonaut_similarity_threshold');
-    if (!currentThreshold || currentThreshold === '0.75') {
+    const parsed = Number(currentThreshold);
+    if (!currentThreshold || isNaN(parsed) || parsed === 0.75 || parsed > 1.0 || parsed < 0.0) {
       localStorage.setItem('vaultonaut_similarity_threshold', '0.45');
     }
     const currentTopK = localStorage.getItem('vaultonaut_top_k');
