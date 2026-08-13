@@ -3,6 +3,7 @@ import { Lightbulb, Check, Compass } from 'lucide-react';
 export default function AIInsights({ citation }) {
   const similarityScore = citation.similarity_score || 0.0;
   const matchPct = (similarityScore * 100).toFixed(0);
+  const threshold = parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.45;
 
   return (
     <div 
@@ -37,7 +38,7 @@ export default function AIInsights({ citation }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
           <Check size={12} color="#34d399" />
-          <span>Category & Threshold Validation Passed (&gt;= 0.75)</span>
+          <span>Category & Threshold Validation Passed (&gt;= {threshold.toFixed(2)})</span>
         </div>
       </div>
     </div>

@@ -3,6 +3,8 @@ import { Cpu, CheckCircle, AlertTriangle, RefreshCw, WifiOff } from 'lucide-reac
 
 export default function StatusBanner() {
   const { connectionStatus, sending, isOnline } = useAIWorkspace();
+  const topK = parseInt(localStorage.getItem('vaultonaut_top_k')) || 5;
+  const threshold = parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.45;
 
   if (!isOnline) {
     return (
@@ -54,8 +56,8 @@ export default function StatusBanner() {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-        <span>Top-K: 5</span>
-        <span>Threshold: 0.75</span>
+        <span>Top-K: {topK}</span>
+        <span>Threshold: {threshold.toFixed(2)}</span>
       </div>
     </div>
   );

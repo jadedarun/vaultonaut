@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database.session import get_db
 from app.config.settings import settings
-from app.services.vector_store import VectorStoreService
+from app.services.vector_store import vector_store_service
 
 router = APIRouter(tags=["Health"])
 
@@ -25,8 +25,10 @@ def detailed_health_check(db: Session = Depends(get_db)):
     # 2. ChromaDB Check
     chroma_status = "healthy"
     try:
-        vector_store = VectorStoreService()
-        vector_store.collection.count()
+        if vector_store_service.is_available:
+            vector_store_service.collection.count()
+        else:
+            chroma_status = "unhealthy: ChromaDB collection is not initialized"
     except Exception as e:
         chroma_status = f"unhealthy: {str(e)}"
 

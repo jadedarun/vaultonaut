@@ -110,7 +110,7 @@ export default function ConversationSidebar() {
           zIndex: 10,
           display: 'flex',
           alignItems: 'center',
-          justify: 'center',
+          justifyContent: 'center',
           opacity: 0.3,
           transition: 'opacity 0.2s'
         }}

@@ -1,6 +1,9 @@
 import { Terminal, Code, Eye, Sparkles } from 'lucide-react';
 
 export default function DeveloperPanel({ developerMode, onToggle }) {
+  const threshold = parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.45;
+  const topK = parseInt(localStorage.getItem('vaultonaut_top_k')) || 5;
+
   return (
     <div style={{ padding: '1.2rem', borderRadius: '0.65rem', background: 'rgba(255, 255, 255, 0.025)', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -26,8 +29,8 @@ export default function DeveloperPanel({ developerMode, onToggle }) {
           <div style={{ color: '#34d399', fontWeight: 600 }}>[Developer Telemetry Inspector Active]</div>
           <div>Embedding Model: all-MiniLM-L6-v2 (384-dimensional dense vectors)</div>
           <div>Vector Database: ChromaDB Persistent Store (storage/chroma_db)</div>
-          <div>Default Similarity Threshold: 0.75 Cosine Distance</div>
-          <div>Top-K Vector Chunks Retrieved: 5</div>
+          <div>Similarity Threshold: {threshold.toFixed(2)} Cosine Similarity</div>
+          <div>Top-K Vector Chunks Retrieved: {topK}</div>
           <div>System Prompt Guarding: Anti-Hallucination & Refusal Grounding Active</div>
         </div>
       ) : (

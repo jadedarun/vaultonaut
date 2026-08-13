@@ -72,10 +72,10 @@ export async function fetchDocumentMetadata(documentId) {
 export async function getAISettings() {
   return {
     provider: 'Google Gemini',
-    model: 'gemini-1.5-flash',
+    model: 'gemini-3.5-flash',
     embedding_model: 'all-MiniLM-L6-v2',
     top_k: parseInt(localStorage.getItem('vaultonaut_top_k')) || 5,
-    similarity_threshold: parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.75,
+    similarity_threshold: parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.45,
     temperature: parseFloat(localStorage.getItem('vaultonaut_temperature')) || 0.2,
     max_tokens: parseInt(localStorage.getItem('vaultonaut_max_tokens')) || 2048,
     context_window: 1048576,

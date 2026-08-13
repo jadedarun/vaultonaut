@@ -31,8 +31,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { useGoogleAuth } from './context/GoogleAuthContext';
-import { KnowledgeProvider } from './context/KnowledgeContext';
-import { DocumentProvider } from './context/DocumentContext';
+import { useDocuments } from './context/DocumentContext';
 import GradientText from './components/GradientText';
 import LineSidebar from './components/LineSidebar';
 import GradientBlinds from './components/GradientBlinds';
@@ -93,8 +92,21 @@ const QUIZ_QUESTION = {
 
 export default function App() {
   const { user, logout } = useGoogleAuth();
+  const { stats } = useDocuments();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Onboarding & LocalStorage Defaults Migration
+  useEffect(() => {
+    const currentThreshold = localStorage.getItem('vaultonaut_similarity_threshold');
+    if (!currentThreshold || currentThreshold === '0.75') {
+      localStorage.setItem('vaultonaut_similarity_threshold', '0.45');
+    }
+    const currentTopK = localStorage.getItem('vaultonaut_top_k');
+    if (!currentTopK) {
+      localStorage.setItem('vaultonaut_top_k', '5');
+    }
+  }, []);
 
   // State
   const [activeTab, setActiveTab] = useState(0);
@@ -323,9 +335,7 @@ export default function App() {
   };
 
   return (
-    <KnowledgeProvider>
-      <DocumentProvider>
-        <OnboardingFlow>
+    <OnboardingFlow>
       <div className="app-container">
       {/* Background Animated Gradient Blinds */}
       <div className="bg-canvas-container">
@@ -391,7 +401,7 @@ export default function App() {
             <span>RAG Engine Online</span>
           </div>
           <div className="db-stats">
-            <p>Chroma vectors: {files.length * 8}</p>
+            <p>Chroma vectors: {stats.vectors_stored || 0}</p>
             <p>Collections: {collections.length}</p>
           </div>
         </div>
@@ -604,7 +614,5 @@ export default function App() {
       )}
       </div>
     </OnboardingFlow>
-  </DocumentProvider>
-</KnowledgeProvider>
   );
 }

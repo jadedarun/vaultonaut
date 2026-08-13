@@ -3,7 +3,7 @@ import { useGoogleAuth } from '../../context/GoogleAuthContext';
 import './AuthenticationCard.css';
 
 export default function AuthenticationCard({ onGoogleLogin, isAuthenticating = false }) {
-  const { authStatus, loginWithGoogle } = useGoogleAuth();
+  const { authStatus, loginWithGoogle, processDemoLogin } = useGoogleAuth();
 
   const handleGoogleClick = () => {
     if (onGoogleLogin) {
@@ -23,6 +23,16 @@ export default function AuthenticationCard({ onGoogleLogin, isAuthenticating = f
           onClick={handleGoogleClick}
           disabled={isBusy}
         />
+
+        <button
+          type="button"
+          className="btn-white-outline demo-login-btn"
+          onClick={processDemoLogin}
+          disabled={isBusy}
+          style={{ width: '100%', justifyContent: 'center', marginTop: '0.8rem', fontSize: '0.86rem' }}
+        >
+          Developer Demo Login (Bypass)
+        </button>
 
         <div className="auth-card__divider">
           <span>or</span>

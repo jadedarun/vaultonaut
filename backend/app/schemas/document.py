@@ -54,3 +54,9 @@ class DocumentStatisticsResponse(BaseModel):
     total_storage_bytes: int
     total_storage_mb: float
     file_types: Dict[str, int]
+    chunks_created: int
+    vectors_stored: int
+    documents_indexed: int
+    avg_chunk_size: float
+    embedding_model: str
+    ai_ready_count: int

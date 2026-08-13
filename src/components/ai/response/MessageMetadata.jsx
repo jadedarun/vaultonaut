@@ -1,7 +1,7 @@
 import { Cpu, Clock, Layers } from 'lucide-react';
 
 export default function MessageMetadata({ metadata = {} }) {
-  const model = metadata.model_name || 'gemini-1.5-flash';
+  const model = metadata.model_name || 'gemini-3.5-flash';
   const latency = metadata.total_latency_ms;
   const count = metadata.retrieved_count || 0;
 

@@ -32,7 +32,7 @@ export function useChat({ activeConversationId, messages, updateThreadMessages, 
         query: userQuery,
         conversation_id: convId,
         top_k: 5,
-        similarity_threshold: 0.75
+        similarity_threshold: 0.45
       });
 
       if (response) {

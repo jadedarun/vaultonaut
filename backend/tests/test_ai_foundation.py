@@ -111,7 +111,8 @@ def test_ai_ingestion_pipeline_end_to_end(client, auth_headers, db_session, test
 def test_similarity_search_endpoint(client, auth_headers):
     # Upload document first
     content = b"PyMuPDF extracts text from PDF documents. Python-docx parses Word documents."
-    client.post("/api/documents/upload", files={"file": ("parsing.txt", io.BytesIO(content), "text/plain")}, headers=auth_headers)
+    upload_res = client.post("/api/documents/upload", files={"file": ("parsing.txt", io.BytesIO(content), "text/plain")}, headers=auth_headers)
+    assert upload_res.status_code == 201, f"Upload failed: {upload_res.status_code} - {upload_res.text}"
 
     # Search
     search_payload = {

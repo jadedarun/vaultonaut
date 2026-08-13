@@ -15,6 +15,8 @@ export default function SourcePanel() {
         gap: '1rem',
         padding: '1.2rem',
         height: '100%',
+        width: '320px',
+        flexShrink: 0,
         boxSizing: 'border-box',
         overflowY: 'auto'
       }}

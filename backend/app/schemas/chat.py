@@ -8,7 +8,7 @@ class ChatRequest(BaseModel):
     query: str = Field(..., min_length=1, description="User prompt / question for Vaultonaut AI")
     conversation_id: Optional[uuid.UUID] = Field(default=None, description="Existing conversation thread ID")
     top_k: Optional[int] = Field(default=5, ge=1, le=50, description="ChromaDB top-K chunks to retrieve")
-    similarity_threshold: Optional[float] = Field(default=0.75, ge=0.0, le=1.0, description="Minimum similarity score filter")
+    similarity_threshold: Optional[float] = Field(default=None, ge=0.0, le=1.0, description="Minimum similarity score filter")
 
 
 class CitationItem(BaseModel):

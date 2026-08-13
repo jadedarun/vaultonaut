@@ -6,7 +6,7 @@ export default function RetrievalSettings({ settings }) {
     return parseInt(localStorage.getItem('vaultonaut_top_k')) || settings?.top_k || 5;
   });
   const [threshold, setThreshold] = useState(() => {
-    return parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || settings?.similarity_threshold || 0.75;
+    return parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || settings?.similarity_threshold || 0.45;
   });
 
   const handleTopKChange = (val) => {

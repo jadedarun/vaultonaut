@@ -7,6 +7,7 @@ export const uploadDocument = async (file) => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+    timeout: 300000, // 5 mins timeout for ingestion
   });
   return response.data;
 };
@@ -20,6 +21,7 @@ export const uploadMultipleDocuments = async (files) => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+    timeout: 600000, // 10 mins timeout for batch ingestion
   });
   return response.data;
 };

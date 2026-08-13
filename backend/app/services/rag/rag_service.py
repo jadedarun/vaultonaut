@@ -32,7 +32,7 @@ class RAGService:
         2. Record User prompt in DB.
         3. Generate Query Vector Embedding via EmbeddingService.
         4. Query ChromaDB scoped strictly to user_id.
-        5. Apply similarity threshold filter (default 0.75).
+        5. Apply similarity threshold filter (default 0.45).
         6. Grounding check: If no relevant chunks meet threshold, return refusal message.
         7. Build context & prompt with Prompt Injection Defense.
         8. Generate response using Gemini via BaseLLMProvider interface.

@@ -94,7 +94,7 @@ export const AIWorkspaceProvider = ({ children }) => {
 
     try {
       const topK = parseInt(localStorage.getItem('vaultonaut_top_k')) || 5;
-      const threshold = parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.75;
+      const threshold = parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.45;
 
       const response = await chatApi.sendMessage({
         query: userQuery,

@@ -28,9 +28,9 @@ services:
     environment:
       - DATABASE_URL=postgresql://vaultonaut_user:vaultonaut_password@postgres:5432/vaultonaut_db
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_MODEL=gemini-1.5-flash
+      - GEMINI_MODEL=gemini-3.5-flash
       - RAG_TOP_K=5
-      - RAG_SIMILARITY_THRESHOLD=0.75
+      - RAG_SIMILARITY_THRESHOLD=0.45
     depends_on:
       postgres:
         condition: service_healthy

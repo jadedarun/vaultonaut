@@ -376,22 +376,58 @@ export default function UploadCenterSection() {
                         >
                           {doc.file_extension?.toUpperCase() || 'FILE'}
                         </span>
-                        <span 
-                          style={{
-                            fontSize: '0.72rem',
-                            fontWeight: 600,
-                            padding: '0.2rem 0.5rem',
-                            borderRadius: '0.35rem',
-                            background: 'rgba(16, 185, 129, 0.15)',
-                            color: '#34d399',
-                            border: '1px solid rgba(16, 185, 129, 0.3)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.2rem'
-                          }}
-                        >
-                          <Sparkles size={11} /> AI Ready
-                        </span>
+                        {doc.status === 'completed' ? (
+                          <span 
+                            style={{
+                              fontSize: '0.72rem',
+                              fontWeight: 600,
+                              padding: '0.2rem 0.5rem',
+                              borderRadius: '0.35rem',
+                              background: 'rgba(16, 185, 129, 0.15)',
+                              color: '#34d399',
+                              border: '1px solid rgba(16, 185, 129, 0.3)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.2rem'
+                            }}
+                          >
+                            <Sparkles size={11} /> AI Ready
+                          </span>
+                        ) : doc.status === 'failed' ? (
+                          <span 
+                            style={{
+                              fontSize: '0.72rem',
+                              fontWeight: 600,
+                              padding: '0.2rem 0.5rem',
+                              borderRadius: '0.35rem',
+                              background: 'rgba(239, 68, 68, 0.15)',
+                              color: '#f87171',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.2rem'
+                            }}
+                          >
+                            <AlertTriangle size={11} /> Failed
+                          </span>
+                        ) : (
+                          <span 
+                            style={{
+                              fontSize: '0.72rem',
+                              fontWeight: 600,
+                              padding: '0.2rem 0.5rem',
+                              borderRadius: '0.35rem',
+                              background: 'rgba(59, 130, 246, 0.15)',
+                              color: '#60a5fa',
+                              border: '1px solid rgba(59, 130, 246, 0.3)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.2rem'
+                            }}
+                          >
+                            <RefreshCw size={11} className="spin-icon" style={{ animation: 'spin 2s linear infinite' }} /> Processing
+                          </span>
+                        )}
                       </div>
 
                       <span 
@@ -399,12 +435,12 @@ export default function UploadCenterSection() {
                           fontSize: '0.75rem',
                           padding: '0.15rem 0.5rem',
                           borderRadius: '1rem',
-                          background: doc.status === 'completed' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                          color: doc.status === 'completed' ? '#10b981' : '#f87171',
+                          background: doc.status === 'completed' ? 'rgba(16, 185, 129, 0.15)' : doc.status === 'failed' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                          color: doc.status === 'completed' ? '#10b981' : doc.status === 'failed' ? '#f87171' : '#60a5fa',
                           fontWeight: 500
                         }}
                       >
-                        ChromaDB Indexed
+                        {doc.status === 'completed' ? 'ChromaDB Indexed' : doc.status === 'failed' ? 'Processing Failed' : `Indexing: ${doc.processing_stage || 'processing'}`}
                       </span>
                     </div>
 

@@ -2,7 +2,7 @@ import { Cpu, CheckCircle, Sparkles } from 'lucide-react';
 
 export default function ProviderCard({ settings }) {
   const provider = settings?.provider || 'Google Gemini';
-  const model = settings?.model || 'gemini-1.5-flash';
+  const model = settings?.model || 'gemini-3.5-flash';
   const status = settings?.status || 'Connected';
 
   return (
