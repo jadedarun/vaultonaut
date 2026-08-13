@@ -70,17 +70,47 @@ export async function fetchDocumentMetadata(documentId) {
 }
 
 export async function getAISettings() {
-  return {
-    provider: 'Google Gemini',
-    model: 'gemini-3.5-flash',
-    embedding_model: 'all-MiniLM-L6-v2',
-    top_k: parseInt(localStorage.getItem('vaultonaut_top_k')) || 5,
-    similarity_threshold: parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.45,
-    temperature: parseFloat(localStorage.getItem('vaultonaut_temperature')) || 0.2,
-    max_tokens: parseInt(localStorage.getItem('vaultonaut_max_tokens')) || 2048,
-    context_window: 1048576,
-    status: 'Connected'
-  };
+  try {
+    const response = await axios.get(`${API_BASE_URL}/settings`, {
+      headers: getAuthHeaders()
+    });
+    const backendData = response.data;
+
+    // Migrate default values if not explicitly customized or if they are old defaults
+    const storedTopK = localStorage.getItem('vaultonaut_top_k');
+    if (!storedTopK) {
+      localStorage.setItem('vaultonaut_top_k', backendData.rag_top_k.toString());
+    }
+    const storedThreshold = localStorage.getItem('vaultonaut_similarity_threshold');
+    if (!storedThreshold || storedThreshold === '0.75') {
+      localStorage.setItem('vaultonaut_similarity_threshold', backendData.rag_similarity_threshold.toString());
+    }
+
+    return {
+      provider: 'Google Gemini',
+      model: backendData.gemini_model || 'gemini-3.5-flash',
+      embedding_model: 'all-MiniLM-L6-v2',
+      top_k: parseInt(localStorage.getItem('vaultonaut_top_k')) || backendData.rag_top_k || 5,
+      similarity_threshold: parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || backendData.rag_similarity_threshold || 0.45,
+      temperature: parseFloat(localStorage.getItem('vaultonaut_temperature')) || 0.2,
+      max_tokens: parseInt(localStorage.getItem('vaultonaut_max_tokens')) || 2048,
+      context_window: 1048576,
+      status: 'Connected'
+    };
+  } catch (err) {
+    console.warn('Failed to fetch settings from backend, using localStorage defaults:', err);
+    return {
+      provider: 'Google Gemini',
+      model: 'gemini-3.5-flash',
+      embedding_model: 'all-MiniLM-L6-v2',
+      top_k: parseInt(localStorage.getItem('vaultonaut_top_k')) || 5,
+      similarity_threshold: parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.45,
+      temperature: parseFloat(localStorage.getItem('vaultonaut_temperature')) || 0.2,
+      max_tokens: parseInt(localStorage.getItem('vaultonaut_max_tokens')) || 2048,
+      context_window: 1048576,
+      status: 'Connected'
+    };
+  }
 }
 
 export async function getUsage() {

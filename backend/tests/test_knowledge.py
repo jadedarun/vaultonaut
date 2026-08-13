@@ -1,4 +1,5 @@
 import uuid
+from typing import Tuple
 from app.core.security import create_access_token
 from app.models.user import User
 
@@ -18,9 +19,6 @@ def create_test_user(db_session, email: str, google_id: str) -> Tuple[User, dict
     token = create_access_token(user_id=user.id, email=user.email)
     headers = {"Authorization": f"Bearer {token}"}
     return user, headers
-
-
-from typing import Tuple
 
 
 def test_create_knowledge(client, db_session):

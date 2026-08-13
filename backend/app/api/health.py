@@ -52,3 +52,14 @@ def detailed_health_check(db: Session = Depends(get_db)):
             "memory_usage_percent": memory_percent
         }
     }
+
+
+@router.get("/api/settings")
+def get_backend_settings():
+    """Exposes backend authoritative configuration defaults (loaded from .env)."""
+    return {
+        "gemini_model": settings.GEMINI_MODEL,
+        "rag_top_k": settings.RAG_TOP_K,
+        "rag_similarity_threshold": settings.RAG_SIMILARITY_THRESHOLD,
+        "environment": settings.ENVIRONMENT
+    }
