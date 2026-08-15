@@ -1,113 +1,106 @@
-# Vaultonaut  — AI-Powered Personal Knowledge Operating System
+# Vaultonaut
 
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115.0-009688?style=flat-square&logo=fastapi)
-![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square&logo=python)
-![React](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react)
-![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=flat-square&logo=vite)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16.0-4169E1?style=flat-square&logo=postgresql)
-![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector_Store-FF6F61?style=flat-square)
-![Google Gemini](https://img.shields.io/badge/Google_Gemini-1.5_Flash-8E7CC3?style=flat-square&logo=google)
-![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)
-![Tests](https://img.shields.io/badge/Tests-42_Passing-brightgreen?style=flat-square)
-
-**Vaultonaut** is a production-grade, AI-powered Personal Knowledge Operating System designed to rival products like **NotebookLM**, **Perplexity AI**, **Notion AI**, and **ChatGPT Projects**. 
-
-It transforms personal notes, PDFs, DOCX files, and plain text documents into an interactive, grounded AI knowledge workspace with transparent source attribution, zero hallucinations, syntax-highlighted code execution blocks, and deep vector citation inspection.
-
----
+Vaultonaut is an AI-powered personal knowledge management and study application. It allows users to upload documents, retrieve grounded information through Retrieval-Augmented Generation (RAG), and generate study materials.
 
 ## Features
 
--  **Grounded RAG Pipeline**: Combines local `sentence-transformers/all-MiniLM-L6-v2` 384d vector embeddings, ChromaDB vector store, and Google Gemini LLM for anti-hallucination grounded Q&A.
--  **3-Column AI Workspace**: Modern conversational interface with thread management sidebar, scrollable chat trajectory, and responsive Source Explorer panel.
--  **Rich Response Presentation**: Markdown renderer supporting headings (H1-H6), bold, italic, lists, blockquotes, responsive tables, and syntax-highlighted code blocks with **Copy Code** buttons.
--  **AI Settings & Diagnostics Hub (`/settings/ai`)**: Real-time telemetry dashboard, Developer Mode inspector, service health diagnostics (`/health/detailed`), and keyboard shortcut reference guide.
--  **Production Security & Hardening**: Rate limiting middleware (200 req/min), structured JSON logging (`X-Correlation-ID`), prompt injection defenses, empty query validation, and composite database indexing (`idx_conversations_user_updated` and `idx_messages_conv_created`).
--  **Advanced Conversational UX**: Stop Generation button (`AbortController`), prompt draft saving per thread, stage-based thinking indicators, Jump to Bottom floating scroll button, and production toast notifications.
+- Document Ingestion: Support for text extraction from PDF, DOCX, and TXT files.
+- Semantic Retrieval: Local dense embeddings query against ChromaDB.
+- Grounded AI Conversations: Google Gemini LLM API integration with prompt injection defenses to produce grounded, source-backed replies.
+- Source Citations: Interactive Source Explorer panel and transparent page/chunk citations.
+- Knowledge Management: Collection categorization, thread sidebar management, and favorite/pin workflows.
+- Automatic Flashcard Generation: Background generation of flashcards from uploaded documents.
+- AI-Generated Quizzes: Automated creation of multiple-choice study quizzes with detailed explanations.
+- Learning Studio: Frontend workspace to review flashcards, test knowledge with quizzes, and read summaries.
+- User Authentication: Google OAuth 2.0 integration with JWT-based session security.
+- Persistent Storage: PostgreSQL database schema for relational data and local file storage for files and vectors.
+- Developer Diagnostics: Telemetry diagnostics interface, API health endpoint, and detailed local logging.
 
----
+## Architecture
 
-##  System Architecture
+Vaultonaut uses a decoupled architecture with a React Single Page Application (SPA) frontend, a FastAPI REST backend, and localized data stores.
 
-```mermaid
-graph TD
-    Client[React 19 Vite Frontend SPA] -->|HTTPS / REST API| API[FastAPI Backend Server :8000]
-    API -->|JWT Authentication| Auth[OAuth2 / JWT Security Layer]
-    API -->|SQLAlchemy ORM| DB[(PostgreSQL 16 Database)]
-    API -->|Vector Similarity Query| VectorStore[(ChromaDB Vector Store)]
-    API -->|Prompt & Context Payload| LLM[Google Gemini LLM Service]
-    VectorStore -->|384d Dense Vectors| Embed[SentenceTransformers all-MiniLM-L6-v2]
-```
+- Frontend SPA: React 19, Vite, and Vanilla CSS.
+- Backend API: FastAPI (Python 3.12+), SQLAlchemy 2.0, and Alembic migrations.
+- Primary Database: PostgreSQL 16.
+- Vector Database: ChromaDB persistent vector database.
+- Embeddings Model: sentence-transformers/all-MiniLM-L6-v2 (384-dimensional).
+- LLM Provider: Google Gemini API (gemini-1.5-flash).
+- Container Orchestration: Docker and Docker Compose.
 
----
+## Tech Stack
 
-##  Technology Stack
+- Frontend: React 19, Vite, Vanilla CSS, Lucide Icons, Framer Motion
+- Backend: Python 3.12+, FastAPI, Uvicorn, SQLAlchemy, Alembic, Pydantic v2, PyMuPDF, python-docx
+- Databases: PostgreSQL 16, ChromaDB
+- AI Integration: Google GenAI SDK, SentenceTransformers (all-MiniLM-L6-v2)
+- DevOps: Docker, Docker Compose, Pytest
 
-| Layer | Technologies |
-|---|---|
-| **Frontend** | React 19, Vite, Vanilla CSS (Glassmorphism design system), Lucide Icons, Framer Motion |
-| **Backend API** | Python 3.12+, FastAPI, Uvicorn, Pydantic v2, PyPDF/PyMuPDF, docx |
-| **Database & ORM** | PostgreSQL 16, SQLAlchemy 2.0 ORM, Alembic Migrations |
-| **Vector DB & Embeddings** | ChromaDB Persistent Store, `sentence-transformers/all-MiniLM-L6-v2` (384d) |
-| **LLM Provider** | Google Gemini API (`gemini-1.5-flash` with grounded prompt injection defense) |
-| **DevOps & Testing** | Docker, Docker Compose, Pytest (42 tests), Oxlint, NGINX |
+## Running Locally
 
----
-
-## Quick Start Guide
+Follow these commands to orchestrate and run the application locally using Docker Compose.
 
 ### Prerequisites
-- Python 3.12+
-- Node.js 20+
-- PostgreSQL 16 (or SQLite for local dev)
-- Google Gemini API Key (`GEMINI_API_KEY`)
 
----
+Ensure you have Docker, Docker Compose, and a Google Gemini API Key configured.
 
+### Run with Docker Compose
 
+1. Clone the repository and navigate to the project root.
+2. Create a `.env` file in the root directory based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+3. Set your `GEMINI_API_KEY` and other configurations inside `.env`.
+4. Build and start the services:
+   ```bash
+   docker-compose up --build
+   ```
+5. The services will be accessible at:
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:8000
+   - API Docs (Swagger): http://localhost:8000/docs
 
-##  Project Directory Structure
+## Environment Variables
+
+The application relies on environment variables for configuration. Copy the template from `.env.example` to `.env` and fill in the values:
+
+- `GEMINI_API_KEY`: API Key for Google Gemini services.
+- `VITE_GOOGLE_CLIENT_ID`: Google OAuth Client ID for user login.
+- `DATABASE_URL`: PostgreSQL connection URI.
+- `JWT_SECRET`: Secret key for signing JWT tokens.
+
+## Project Structure
 
 ```
 vaultonaut/
  ├── backend/
- │    ├── alembic/                 (Alembic database migration versions 0001 to 0005)
+ │    ├── alembic/                 (Database migrations)
  │    ├── app/
- │    │    ├── api/                (FastAPI routers: chat, search, documents, health, auth)
- │    │    ├── config/             (Pydantic settings configuration)
- │    │    ├── core/               (Logging & JWT security functions)
- │    │    ├── database/           (SQLAlchemy session & engine setup)
- │    │    ├── middleware/         (Rate limiting & structured logging middleware)
- │    │    ├── models/             (User, Knowledge, Document, Chunk, Embedding, Conversation models)
- │    │    ├── schemas/            (Pydantic request/response schemas)
- │    │    └── services/           (RAG engine, Chunking, Embedding, VectorStore, Gemini Provider)
- │    ├── tests/                   (42 pytest cases for RAG pipeline, security, health, unit mocks)
- │    ├── Dockerfile               (Backend production image)
- │    ├── main.py                  (FastAPI application entry point)
- │    └── requirements.txt         (Python dependencies)
+ │    │    ├── api/                (FastAPI routers: chat, documents, auth, etc.)
+ │    │    ├── config/             (Application settings)
+ │    │    ├── core/               (Logging and security core)
+ │    │    ├── models/             (SQLAlchemy database models)
+ │    │    ├── schemas/            (Pydantic validation schemas)
+ │    │    └── services/           (RAG engine, embedding, and factory services)
+ │    ├── tests/                   (Pytest backend suite)
+ │    ├── Dockerfile               (Backend production image config)
+ │    └── main.py                  (FastAPI entrypoint)
  ├── src/
- │    ├── components/
- │    │    └── ai/                 (AI Workspace, ChatWindow, ConversationSidebar, SourcePanel, Settings)
- │    ├── context/                 (AIWorkspaceContext, AuthContext, DocumentContext)
- │    ├── hooks/                   (useChat, useConversation, useMessages, useToast, useDrafts, etc.)
- │    ├── services/                (chatApi.js client layer, analytics.js telemetry)
- │    └── App.jsx                  (Root React application component)
- ├── docker-compose.yml            (Docker orchestration)
- ├── Dockerfile                    (Frontend production NGINX image)
+ │    ├── components/              (React components: workspace, settings, etc.)
+ │    ├── context/                 (React context state providers)
+ │    ├── hooks/                   (Custom React hooks)
+ │    ├── services/                (API service integrations)
+ │    └── App.jsx                  (Main application workspace)
+ ├── docker-compose.yml            (Docker multi-service orchestration)
+ ├── Dockerfile                    (Frontend production NGINX image config)
  ├── ARCHITECTURE.md               (Technical system architecture specification)
- ├── CHANGELOG.md                  (Semantic versioning changelog v0.1.0)
+ ├── CHANGELOG.md                  (Semantic versioning changelog)
  ├── CONTRIBUTING.md               (Developer contribution guidelines)
  └── LICENSE                       (MIT License)
 ```
 
----
+## Status
 
-##  Known Limitations & Future Roadmap
-
-### Current Limitations
-- Single AI Provider active at a time (Google Gemini).
-- Local storage for vector embeddings (ChromaDB persistent directory).
-- Single-user document boundary (no collaborative shared team vaults).
-
----
+Vaultonaut is currently under active development and is being prepared for deployment.
 
