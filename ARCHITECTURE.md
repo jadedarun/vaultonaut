@@ -35,9 +35,9 @@ sequenceDiagram
     API->>VectorDB: Query Similarity (all-MiniLM-L6-v2 384d, top_k=5)
     VectorDB-->>API: Return Top-K Chunks + Similarity Scores
     
-    alt Similarity Score < 0.75 Cutoff
+    alt Similarity Score < 0.45 Cutoff
         API-->>Frontend: Grounded Refusal ("I couldn't find enough information...")
-    else Similarity Score >= 0.75 Cutoff
+    else Similarity Score >= 0.45 Cutoff
         API->>Gemini: Generate Content (System Grounding Prompt + Chunks + Query)
         Gemini-->>API: Return Grounded Response Text
         API->>DB: Save User & Assistant Messages to History

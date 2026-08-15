@@ -53,3 +53,16 @@ backend/master_*.py
 # Internal tooling and AI configurations
 .agents/
 
+# Local database and runtime data
+*.db
+*.sqlite
+*.sqlite3
+docker-data/
+postgres-data/
+chroma_db/
+backend/storage/chroma_db/
+
+# Temporary files
+*.tmp
+*.temp
+

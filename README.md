@@ -1,32 +1,29 @@
 # Vaultonaut
 
-Vaultonaut is an AI-powered personal knowledge management and study application. It allows users to upload documents, retrieve grounded information through Retrieval-Augmented Generation (RAG), and generate study materials.
+Vaultonaut is an AI-powered personal knowledge management and grounded document intelligence application.
 
 ## Features
 
-- Document Ingestion: Support for text extraction from PDF, DOCX, and TXT files.
-- Semantic Retrieval: Local dense embeddings query against ChromaDB.
-- Grounded AI Conversations: Google Gemini LLM API integration with prompt injection defenses to produce grounded, source-backed replies.
-- Source Citations: Interactive Source Explorer panel and transparent page/chunk citations.
-- Knowledge Management: Collection categorization, thread sidebar management, and favorite/pin workflows.
-- Automatic Flashcard Generation: Background generation of flashcards from uploaded documents.
-- AI-Generated Quizzes: Automated creation of multiple-choice study quizzes with detailed explanations.
-- Learning Studio: Frontend workspace to review flashcards, test knowledge with quizzes, and read summaries.
-- User Authentication: Google OAuth 2.0 integration with JWT-based session security.
-- Persistent Storage: PostgreSQL database schema for relational data and local file storage for files and vectors.
-- Developer Diagnostics: Telemetry diagnostics interface, API health endpoint, and detailed local logging.
+- Document ingestion
+- AI-powered document conversations
+- Grounded retrieval
+- Source citations
+- Knowledge management
+- Automatic flashcard generation
+- AI-generated quizzes
+- Learning Studio
+- Authentication
+- Persistent storage
+- Developer diagnostics
 
 ## Architecture
 
-Vaultonaut uses a decoupled architecture with a React Single Page Application (SPA) frontend, a FastAPI REST backend, and localized data stores.
-
-- Frontend SPA: React 19, Vite, and Vanilla CSS.
-- Backend API: FastAPI (Python 3.12+), SQLAlchemy 2.0, and Alembic migrations.
-- Primary Database: PostgreSQL 16.
-- Vector Database: ChromaDB persistent vector database.
-- Embeddings Model: sentence-transformers/all-MiniLM-L6-v2 (384-dimensional).
-- LLM Provider: Google Gemini API (gemini-1.5-flash).
-- Container Orchestration: Docker and Docker Compose.
+Frontend
+→ FastAPI backend
+→ PostgreSQL
+→ ChromaDB
+→ SentenceTransformer embeddings
+→ Gemini
 
 ## Tech Stack
 
@@ -36,6 +33,24 @@ Vaultonaut uses a decoupled architecture with a React Single Page Application (S
 - AI Integration: Google GenAI SDK, SentenceTransformers (all-MiniLM-L6-v2)
 - DevOps: Docker, Docker Compose, Pytest
 
+## Local Development
+
+Follow these steps to run the application locally using Docker Compose:
+
+1. Clone the repository and navigate to the project root.
+2. Create a `.env` file in the root directory based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+3. Set your `GEMINI_API_KEY` and other configurations inside `.env`.
+4. Build and start the services:
+   ```bash
+   docker-compose up --build
+   ```
+5. The services will be accessible at:
+   - Frontend SPA: http://localhost:5173
+   - Backend API: http://localhost:8000
+   - Interactive API Docs (Swagger): http://localhost:8000/docs
 
 
 ## Environment Variables
@@ -79,5 +94,4 @@ vaultonaut/
 
 ## Status
 
-Vaultonaut is currently under active development and is being prepared for deployment.
-
+Vaultonaut is under active development and is being prepared for deployment.
