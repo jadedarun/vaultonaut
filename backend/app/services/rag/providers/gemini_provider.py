@@ -38,7 +38,8 @@ class GeminiProvider(BaseLLMProvider):
         system_prompt: Optional[str] = None,
         temperature: float = 0.2,
         max_tokens: Optional[int] = None,
-        model_override: Optional[str] = None
+        model_override: Optional[str] = None,
+        response_mime_type: Optional[str] = None
     ) -> Dict[str, Any]:
         # Check and load dynamic API Key configuration if not configured yet
         if not self._configured or not self.api_key:
@@ -60,10 +61,13 @@ class GeminiProvider(BaseLLMProvider):
 
         try:
             # Construct generation config
-            gen_config = genai.GenerationConfig(
-                temperature=temperature,
-                max_output_tokens=max_tokens or 2048
-            )
+            config_args = {
+                "temperature": temperature,
+                "max_output_tokens": max_tokens or 2048
+            }
+            if response_mime_type:
+                config_args["response_mime_type"] = response_mime_type
+            gen_config = genai.GenerationConfig(**config_args)
 
             # Initialize generative model
             model = genai.GenerativeModel(

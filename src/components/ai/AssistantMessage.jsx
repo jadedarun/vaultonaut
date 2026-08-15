@@ -9,7 +9,7 @@ export default function AssistantMessage({ message }) {
   const { retryLastPrompt, sending } = useAIWorkspace();
 
   const citations = message.retrieval_metadata?.citations || [];
-  const isGrounded = message.grounded !== false;
+  const isGrounded = message.grounded !== false && message.retrieval_metadata?.grounded !== false;
   const isFailed = message.status === 'failed';
 
   if (isFailed) {

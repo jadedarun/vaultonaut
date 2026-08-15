@@ -67,19 +67,19 @@ export default function SourceCard({ citation }) {
             fontSize: '0.7rem',
             padding: '0.15rem 0.45rem',
             borderRadius: '0.3rem',
-            background: confidence.bg,
-            color: confidence.text,
-            border: `1px solid ${confidence.border}`,
+            background: 'rgba(59, 130, 246, 0.15)',
+            color: '#60a5fa',
+            border: '1px solid rgba(59, 130, 246, 0.3)',
             fontWeight: 600,
             whiteSpace: 'nowrap'
           }}
         >
-          {matchPct}% match
+          Page {citation.page_num || citation.chunk_index + 1}
         </span>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.73rem', color: 'var(--text-muted)' }}>
-        <span>Chunk #{citation.chunk_index} &bull; {citation.category || 'General'}</span>
+        <span>Source Document Reference</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', color: 'var(--color-arctic-1)' }}>
           Inspect <ExternalLink size={10} />
         </span>

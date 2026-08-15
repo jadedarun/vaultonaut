@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
     lastName: backendUser.last_name || 'User',
     displayName: backendUser.full_name || backendUser.first_name || 'Vaultonaut User',
     email: backendUser.email,
-    photoURL: backendUser.profile_picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(backendUser.email || 'User')}`,
+    photoURL: backendUser.profile_picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(backendUser.email || 'User')}&top[]=shortHair&top[]=dreads&top[]=frizzle&top[]=turban&top[]=shaved&top[]=shortCurly&top[]=shortFlat&top[]=shortRound&top[]=shortWaved&top[]=sides&top[]=theCaesar&top[]=theCaesarWithSideParting&facialHairProbability=30`,
     emailVerified: backendUser.email_verified ?? true,
     provider: 'Google',
     createdAt: backendUser.created_at,

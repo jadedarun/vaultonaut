@@ -64,3 +64,18 @@ export const downloadDocument = async (id, filename) => {
   link.remove();
   window.URL.revokeObjectURL(url);
 };
+
+export const getDocumentFlashcards = async (id) => {
+  const response = await API.get(`/api/documents/${id}/flashcards`);
+  return response.data;
+};
+
+export const generateDocumentFlashcards = async (id) => {
+  const response = await API.post(`/api/documents/${id}/flashcards/generate`);
+  return response.data;
+};
+
+export const getDocumentQuiz = async (id) => {
+  const response = await API.get(`/api/documents/${id}/quiz`);
+  return response.data;
+};

@@ -75,7 +75,7 @@ export default function UploadCenterSection() {
       try {
         const { results, errors } = await uploadBatch(validFiles);
         if (results.length > 0) {
-          showToast(`Successfully processed ${results.length} document(s): Chunked, Embedded & Vector Indexed in ChromaDB!`, 'success');
+          showToast(`Successfully prepared ${results.length} document(s) for study!`, 'success');
           fetchKnowledge();
         }
         if (errors.length > 0) {
@@ -161,15 +161,15 @@ export default function UploadCenterSection() {
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', textAlign: 'left', position: 'relative' }}>
           <div className="card-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', margin: 0, fontSize: '1.2rem', fontWeight: 600 }}>
-              <Upload size={22} className="logo-icon" /> AI Ingestion & Vector Indexing Workspace
+              <Upload size={22} className="logo-icon" /> Upload Learning Materials
             </h2>
             <span className="badge-tag" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '0.3rem 0.7rem', borderRadius: '1rem', fontSize: '0.75rem', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-              Milestone 5 Engine
+              AI Study Ready
             </span>
           </div>
 
           <p className="card-desc" style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: 0 }}>
-            Upload documents to clean text, chunk into 800-character segments, generate 384-dimensional vector embeddings via <code style={{ color: 'var(--color-arctic-1)' }}>all-MiniLM-L6-v2</code>, and store in ChromaDB for instant AI semantic search.
+            Upload your documents (PDF, DOCX, TXT, MD) to prepare them for AI questions, study flashcards, and quizzes.
           </p>
 
           <div
@@ -216,52 +216,38 @@ export default function UploadCenterSection() {
 
           {/* AI Pipeline Timeline Badges */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', fontSize: '0.78rem' }}>
-            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>AI Pipeline Stages:</span>
-            <span style={{ padding: '0.15rem 0.5rem', borderRadius: '0.3rem', background: 'rgba(255,255,255,0.06)', color: '#ccc' }}>1. Clean</span>
+            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Document Preparation:</span>
+            <span style={{ padding: '0.15rem 0.5rem', borderRadius: '0.3rem', background: 'rgba(255,255,255,0.06)', color: '#ccc' }}>Reading</span>
             <span>&rarr;</span>
-            <span style={{ padding: '0.15rem 0.5rem', borderRadius: '0.3rem', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa' }}>2. Chunk (800ch)</span>
+            <span style={{ padding: '0.15rem 0.5rem', borderRadius: '0.3rem', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa' }}>Understanding</span>
             <span>&rarr;</span>
-            <span style={{ padding: '0.15rem 0.5rem', borderRadius: '0.3rem', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc' }}>3. Embed (384d)</span>
-            <span>&rarr;</span>
-            <span style={{ padding: '0.15rem 0.5rem', borderRadius: '0.3rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399' }}>4. ChromaDB Vector Store</span>
+            <span style={{ padding: '0.15rem 0.5rem', borderRadius: '0.3rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399' }}>AI Ready</span>
           </div>
         </div>
 
-        {/* AI Foundation Statistics Overview */}
+        {/* Study Library Statistics Overview */}
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', textAlign: 'left' }}>
           <h3 style={{ fontSize: '1.05rem', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Cpu size={18} color="var(--color-arctic-1)" /> AI Foundation Index Status
+            <FileCheck size={18} color="var(--color-arctic-1)" /> Study Library
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.65rem', border: '1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Embedding Model:</span>
-              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-arctic-1)', fontFamily: 'var(--font-mono)' }}>
-                {stats.embedding_model || 'all-MiniLM-L6-v2'}
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Documents:</span>
+              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>
+                {stats.total_documents || 0}
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Vectors Stored:</span>
-              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#34d399', fontFamily: 'var(--font-mono)' }}>
-                {stats.vectors_stored || 0} vectors
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Storage Used:</span>
+              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-arctic-1)', fontFamily: 'var(--font-mono)' }}>
+                {stats.total_storage_mb || 0} MB
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Chunks Created:</span>
-              <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#fff', fontFamily: 'var(--font-mono)' }}>
-                {stats.chunks_created || 0} chunks
-              </span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Avg Chunk Size:</span>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                {stats.avg_chunk_size || 800} chars
-              </span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>AI Ready Documents:</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>AI Ready:</span>
               <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#10b981' }}>
-                {stats.ai_ready_count || 0}
+                {stats.ai_ready_count || 0} Ready
               </span>
             </div>
           </div>
@@ -331,7 +317,7 @@ export default function UploadCenterSection() {
       <div className="glass-card" style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <FileCheck size={20} color="var(--color-arctic-1)" /> Vector Indexed Documents ({documents.length})
+            <FileCheck size={20} color="var(--color-arctic-1)" /> Study Library Documents ({documents.length})
           </h3>
         </div>
 
@@ -440,7 +426,7 @@ export default function UploadCenterSection() {
                           fontWeight: 500
                         }}
                       >
-                        {doc.status === 'completed' ? 'ChromaDB Indexed' : doc.status === 'failed' ? 'Processing Failed' : `Indexing: ${doc.processing_stage || 'processing'}`}
+                        {doc.status === 'completed' ? 'AI Ready' : doc.status === 'failed' ? 'Couldn\'t prepare' : `Preparing: ${doc.processing_stage || 'processing'}`}
                       </span>
                     </div>
 

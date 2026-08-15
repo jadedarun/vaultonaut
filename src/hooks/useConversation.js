@@ -15,7 +15,11 @@ export function useConversation() {
       const history = await chatApi.fetchConversations();
       if (Array.isArray(history)) {
         setConversations(history);
-        if (history.length > 0 && !activeConversationId) {
+        const savedId = localStorage.getItem('active_conversation_id');
+        if (savedId && history.some(c => c.id === savedId)) {
+          setActiveConversationId(savedId);
+          localStorage.removeItem('active_conversation_id');
+        } else if (history.length > 0 && !activeConversationId) {
           setActiveConversationId(history[0].id);
         }
       }

@@ -48,12 +48,13 @@ def create_knowledge(
     db.refresh(item)
 
     # Trigger vector indexing
-    try:
-        from app.services import vector_sync_service
-        vector_sync_service.process_knowledge_indexing(db, item, item.content)
-    except Exception as err:
-        from app.core.logging import logger
-        logger.error(f"Failed to vector index knowledge item {item.id}: {err}")
+    if item.category not in ("Flashcards", "Quizzes", "Summaries", "Study Notes"):
+        try:
+            from app.services import vector_sync_service
+            vector_sync_service.process_knowledge_indexing(db, item, item.content)
+        except Exception as err:
+            from app.core.logging import logger
+            logger.error(f"Failed to vector index knowledge item {item.id}: {err}")
 
     return item
 

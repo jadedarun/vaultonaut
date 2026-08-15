@@ -54,10 +54,10 @@ export default function SettingsSection({ user, logout }) {
 
   const settingsTabs = [
     { id: 'general', label: 'General & Profile', icon: User },
-    { id: 'ai', label: 'AI Engine & Parameters', icon: Cpu },
     { id: 'appearance', label: 'Appearance & UI', icon: Moon },
-    { id: 'developer', label: 'Developer Diagnostics', icon: SettingsIcon },
+    { id: 'ai_preferences', label: 'AI Preferences', icon: Cpu },
     { id: 'privacy', label: 'Privacy & Data', icon: ShieldCheck },
+    { id: 'developer', label: 'Developer Diagnostics', icon: SettingsIcon },
     { id: 'about', label: 'About Vaultonaut', icon: Info }
   ];
 
@@ -78,7 +78,7 @@ export default function SettingsSection({ user, logout }) {
           <span className="badge-tag">Vaultonaut Control Panel</span>
         </div>
         <p className="card-desc" style={{ marginTop: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-          Manage your personal user profile, custom themes, model parameters, local vector database diagnostics, and local system telemetry.
+          Manage your personal study profile, preferred learning styles, custom interface themes, and developer diagnostics.
         </p>
       </div>
 
@@ -104,7 +104,7 @@ export default function SettingsSection({ user, logout }) {
       {/* Tab Content Panels */}
       {loading ? (
         <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-          Loading system configurations & telemetry diagnostics...
+          Loading workspace configurations...
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -114,7 +114,7 @@ export default function SettingsSection({ user, logout }) {
             <div className="glass-card" style={{ padding: '1.8rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
                 <img 
-                  src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || 'User')}`} 
+                  src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || 'User')}&top[]=shortHair&top[]=dreads&top[]=frizzle&top[]=turban&top[]=shaved&top[]=shortCurly&top[]=shortFlat&top[]=shortRound&top[]=shortWaved&top[]=sides&top[]=theCaesar&top[]=theCaesarWithSideParting&facialHairProbability=30`} 
                   alt="Profile" 
                   style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--color-arctic-3)' }}
                 />
@@ -164,18 +164,7 @@ export default function SettingsSection({ user, logout }) {
             </div>
           )}
 
-          {/* SECTION 2: AI Engine & Parameters */}
-          {activeTab === 'ai' && (
-            <>
-              <ProviderCard settings={settings} />
-              <RetrievalSettings settings={settings} />
-              <ModelSettings settings={settings} />
-              <UsageDashboard usage={usage} />
-              <HealthStatus health={health} />
-            </>
-          )}
-
-          {/* SECTION 3: Appearance & UI */}
+          {/* SECTION 2: Appearance & UI */}
           {activeTab === 'appearance' && (
             <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -211,33 +200,84 @@ export default function SettingsSection({ user, logout }) {
             </div>
           )}
 
-          {/* SECTION 4: Developer Diagnostics */}
+          {/* SECTION 3: AI Preferences */}
+          {activeTab === 'ai_preferences' && (
+            <div className="glass-card" style={{ padding: '1.8rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Cpu size={18} color="var(--color-arctic-1)" />
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#fff' }}>AI Response & Study Preferences</h4>
+              </div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+                Customize how the AI Workspace assistant and Learning Studio formulate study materials.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
+                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff' }}>Response Style</span>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Preferred formulation style for chat workspace answers.</span>
+                  <select 
+                    defaultValue="detailed"
+                    className="input-field" 
+                    style={{ width: '100%', padding: '0.45rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.4rem', color: '#fff', fontSize: '0.82rem', marginTop: '0.3rem' }}
+                  >
+                    <option value="detailed">In-depth Explanations (Detailed)</option>
+                    <option value="concise">Concise & Direct Summaries</option>
+                    <option value="bullets">Bullet Points & Highlights</option>
+                  </select>
+                </div>
+
+                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff' }}>Learning Goal Focus</span>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Tailor auto-generated flashcards and study notes.</span>
+                  <select 
+                    defaultValue="concepts"
+                    className="input-field" 
+                    style={{ width: '100%', padding: '0.45rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.4rem', color: '#fff', fontSize: '0.82rem', marginTop: '0.3rem' }}
+                  >
+                    <option value="concepts">Conceptual Understanding (Focus on key terminology)</option>
+                    <option value="exams">Exam Preparation (Focus on mock Q&A style)</option>
+                    <option value="practical">Practical Application (Focus on examples & code)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 4: Privacy & Data */}
+          {activeTab === 'privacy' && (
+            <PreferenceSection />
+          )}
+
+          {/* SECTION 5: Developer Diagnostics */}
           {activeTab === 'developer' && (
             <>
               <DeveloperPanel developerMode={developerMode} onToggle={toggleDeveloperMode} />
               
               {developerMode && (
-                <div className="glass-card" style={{ padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Terminal size={18} color="var(--color-arctic-1)" />
-                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#fff' }}>Vector Console Logger Telemetry</h4>
+                <>
+                  <ProviderCard settings={settings} />
+                  <RetrievalSettings settings={settings} />
+                  <ModelSettings settings={settings} />
+                  <UsageDashboard usage={usage} />
+                  <HealthStatus health={health} />
+                  
+                  <div className="glass-card" style={{ padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Terminal size={18} color="var(--color-arctic-1)" />
+                      <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#fff' }}>Vector Console Logger Telemetry</h4>
+                    </div>
+                    <div style={{ padding: '0.8rem', background: '#09090b', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.4rem', height: '120px', overflowY: 'auto' }}>
+                      <div>[LOGS 20:06:51] ChromaDB client initialized from workspace persistent store.</div>
+                      <div>[LOGS 20:06:52] Local vector store collections mapped: 1. (vaultonaut_documents)</div>
+                      <div>[LOGS 20:07:01] PostgreSQL database connected. 5 schemas, 11 models registered.</div>
+                      <div style={{ color: '#34d399' }}>[SYSTEM] Diagnostic telemetry initialized: all systems operational.</div>
+                    </div>
                   </div>
-                  <div style={{ padding: '0.8rem', background: '#09090b', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.4rem', height: '120px', overflowY: 'auto' }}>
-                    <div>[LOGS 20:06:51] ChromaDB client initialized from workspace persistent store.</div>
-                    <div>[LOGS 20:06:52] Local vector store collections mapped: 1. (vaultonaut_documents)</div>
-                    <div>[LOGS 20:07:01] PostgreSQL database connected. 5 schemas, 11 models registered.</div>
-                    <div style={{ color: '#34d399' }}>[SYSTEM] Diagnostic telemetry initialized: all systems operational.</div>
-                  </div>
-                </div>
+                </>
               )}
 
               <KeyboardShortcutCard />
             </>
-          )}
-
-          {/* SECTION 5: Privacy & Data */}
-          {activeTab === 'privacy' && (
-            <PreferenceSection />
           )}
 
           {/* SECTION 6: About Vaultonaut */}
@@ -268,7 +308,7 @@ export default function SettingsSection({ user, logout }) {
                 </div>
 
                 <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                  Created as a production-grade full-stack system matching the capabilities of NotebookLM and Notion AI. All operations except LLM generation are executed 100% locally.
+                  Created as a production-grade full-stack study assistant matching the capabilities of NotebookLM and Notion AI. All operations except LLM generation are executed 100% locally.
                 </p>
               </div>
             </div>

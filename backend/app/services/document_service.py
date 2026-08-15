@@ -5,6 +5,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, select
 from fastapi import HTTPException, status, UploadFile
 
+import json
+import threading
+from app.core.logging import logger
+
 from app.models.document import Document
 from app.models.knowledge import Knowledge
 from app.schemas.knowledge import KnowledgeCreate
@@ -14,6 +18,182 @@ from app.services import knowledge_service
 from app.services import vector_sync_service
 from app.models.chunk import DocumentChunk
 from app.models.embedding import Embedding
+
+
+# Thread-safe set of documents currently generating flashcards/quizzes
+generating_flashcards_docs = set()
+generating_lock = threading.Lock()
+
+def is_generating_flashcards(document_id: str) -> bool:
+    with generating_lock:
+        return document_id in generating_flashcards_docs
+
+def set_generating_flashcards(document_id: str, is_generating: bool):
+    with generating_lock:
+        if is_generating:
+            generating_flashcards_docs.add(document_id)
+        else:
+            generating_flashcards_docs.discard(document_id)
+
+
+def generate_study_materials_background(document_id_str: str, user_id_str: str, document_text: str):
+    """
+    Background worker thread to generate flashcards and quiz using Gemini.
+    """
+    set_generating_flashcards(document_id_str, True)
+    logger.info(f"Background flashcard/quiz generation started for document {document_id_str}")
+    
+    from app.database.session import SessionLocal
+    db = SessionLocal()
+    try:
+        document_id = uuid.UUID(document_id_str)
+        user_id = uuid.UUID(user_id_str)
+        
+        doc = db.query(Document).filter(Document.id == document_id).first()
+        if not doc:
+            logger.error(f"Document {document_id_str} not found in background thread.")
+            return
+
+        from app.services.rag.providers.factory import LLMProviderFactory
+        provider = LLMProviderFactory.get_provider("gemini")
+
+        # 1. Generate Flashcards
+        existing_fc = db.query(Knowledge).filter(
+            Knowledge.user_id == user_id,
+            Knowledge.category == "Flashcards",
+            Knowledge.title == f"Flashcards - {document_id_str}"
+        ).first()
+        
+        if not existing_fc:
+            fc_system_prompt = """You are an AI study assistant. Your task is to generate a set of high-quality, educational flashcards from the provided document content.
+Each flashcard must have a question (q) and an answer (a).
+The cards must be grounded strictly in the document content.
+Ensure they cover definitions, key concepts, comparisons, and important facts.
+Respond with a valid JSON array of objects, where each object has exactly two keys: "q" and "a".
+Example format:
+[
+  {"q": "What is HTML?", "a": "HTML stands for HyperText Markup Language and is used to structure web pages."}
+]
+Do not include any other text, markdown formatting, or explanation. Output ONLY the JSON array."""
+
+            fc_prompt = f"""Generate 6-12 high-quality study flashcards based on the following document:
+
+DOCUMENT TITLE: {doc.original_filename}
+
+DOCUMENT CONTENT:
+{document_text[:20000]}
+"""
+            try:
+                llm_output = provider.generate_response(
+                    prompt=fc_prompt,
+                    system_prompt=fc_system_prompt,
+                    temperature=0.2,
+                    max_tokens=4096,
+                    response_mime_type="application/json"
+                )
+                content = llm_output.get("content", "").strip()
+                if content.startswith("```"):
+                    lines = content.split("\n")
+                    if lines[0].startswith("```"):
+                        lines = lines[1:]
+                    if lines[-1].startswith("```"):
+                        lines = lines[:-1]
+                    content = "\n".join(lines).strip()
+                parsed_cards = json.loads(content)
+                if isinstance(parsed_cards, list) and len(parsed_cards) > 0:
+                    knowledge_fc = Knowledge(
+                        id=uuid.uuid4(),
+                        user_id=user_id,
+                        title=f"Flashcards - {document_id_str}",
+                        content=json.dumps(parsed_cards),
+                        category="Flashcards",
+                        tags=[doc.file_extension.replace(".", "").upper(), "Flashcard"],
+                        favorite=False,
+                        pinned=False,
+                        summary=f"Auto-generated flashcards for {doc.original_filename}"
+                    )
+                    db.add(knowledge_fc)
+                    db.commit()
+                    logger.info(f"Successfully generated and saved {len(parsed_cards)} flashcards for document {document_id_str}")
+            except Exception as fc_err:
+                logger.error(f"Failed to generate flashcards: {fc_err}. Raw content: {content}")
+
+        # 2. Generate Quiz
+        existing_quiz = db.query(Knowledge).filter(
+            Knowledge.user_id == user_id,
+            Knowledge.category == "Quizzes",
+            Knowledge.title == f"Quiz - {document_id_str}"
+        ).first()
+        
+        if not existing_quiz:
+            quiz_system_prompt = """You are an AI study assistant. Your task is to generate a high-quality multiple choice quiz based strictly on the provided document content.
+Generate a valid JSON object containing a list of questions under the key "questions".
+Each question object must have:
+- "question": The question text.
+- "options": An array of 4 option strings.
+- "answer_idx": The index (0-3) of the correct option.
+- "explanation": A detailed explanation of why this option is correct.
+
+Example format:
+{
+  "questions": [
+    {
+      "question": "Which protocol is stateless?",
+      "options": ["HTTP", "TCP", "FTP", "SMTP"],
+      "answer_idx": 0,
+      "explanation": "HTTP is stateless because each request is executed independently, without knowledge of previous requests."
+    }
+  ]
+}
+Do not include any other text, markdown formatting, or explanation. Output ONLY the JSON object."""
+
+            quiz_prompt = f"""Generate a 4-question multiple choice quiz based on the following document:
+
+DOCUMENT TITLE: {doc.original_filename}
+
+DOCUMENT CONTENT:
+{document_text[:20000]}
+"""
+            try:
+                llm_output = provider.generate_response(
+                    prompt=quiz_prompt,
+                    system_prompt=quiz_system_prompt,
+                    temperature=0.2,
+                    max_tokens=4096,
+                    response_mime_type="application/json"
+                )
+                content = llm_output.get("content", "").strip()
+                if content.startswith("```"):
+                    lines = content.split("\n")
+                    if lines[0].startswith("```"):
+                        lines = lines[1:]
+                    if lines[-1].startswith("```"):
+                        lines = lines[:-1]
+                    content = "\n".join(lines).strip()
+                parsed_quiz = json.loads(content)
+                if "questions" in parsed_quiz:
+                    knowledge_quiz = Knowledge(
+                        id=uuid.uuid4(),
+                        user_id=user_id,
+                        title=f"Quiz - {document_id_str}",
+                        content=json.dumps(parsed_quiz),
+                        category="Quizzes",
+                        tags=[doc.file_extension.replace(".", "").upper(), "Quiz"],
+                        favorite=False,
+                        pinned=False,
+                        summary=f"Auto-generated quiz for {doc.original_filename}"
+                    )
+                    db.add(knowledge_quiz)
+                    db.commit()
+                    logger.info(f"Successfully generated and saved quiz for document {document_id_str}")
+            except Exception as quiz_err:
+                logger.error(f"Failed to generate quiz: {quiz_err}. Raw content: {content}")
+                
+    except Exception as e:
+        logger.error(f"Error in study materials background generator for document {document_id_str}: {e}")
+    finally:
+        db.close()
+        set_generating_flashcards(document_id_str, False)
 
 
 def check_duplicate_document(db: Session, user_id: uuid.UUID, checksum_sha256: str) -> bool:
@@ -123,6 +303,18 @@ def process_document_pipeline(
         document.processed_at = datetime.utcnow()
         db.commit()
         db.refresh(document)
+
+        # Trigger background task for flashcard/quiz generation
+        try:
+            thread = threading.Thread(
+                target=generate_study_materials_background,
+                args=(str(document.id), str(document.user_id), extracted.text)
+            )
+            thread.daemon = True
+            thread.start()
+        except Exception as e:
+            logger.error(f"Failed to start background flashcard generation thread: {e}")
+
         return document
 
     except Exception as err:
@@ -228,6 +420,18 @@ def get_document_statistics(db: Session, user_id: uuid.UUID) -> Dict[str, Any]:
 
     file_types = {ext.replace(".", "").upper(): count for ext, count in type_counts}
 
+    # Fetch Conversations and Flashcards
+    from app.models.conversation import Conversation
+    total_conversations = db.query(func.count(Conversation.id)).filter(Conversation.user_id == user_id).scalar() or 0
+    total_flashcards = 0
+    flashcard_entries = db.query(Knowledge).filter(Knowledge.user_id == user_id, Knowledge.category == "Flashcards").all()
+    for entry in flashcard_entries:
+        try:
+            cards = json.loads(entry.content)
+            total_flashcards += len(cards)
+        except Exception:
+            pass
+
     return {
         "total_documents": total_documents,
         "completed_count": completed_count,
@@ -241,5 +445,7 @@ def get_document_statistics(db: Session, user_id: uuid.UUID) -> Dict[str, Any]:
         "documents_indexed": completed_count,
         "avg_chunk_size": avg_chunk_size,
         "embedding_model": "all-MiniLM-L6-v2",
-        "ai_ready_count": completed_count
+        "ai_ready_count": completed_count,
+        "total_conversations": total_conversations,
+        "total_flashcards": total_flashcards
     }

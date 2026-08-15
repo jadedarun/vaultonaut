@@ -60,3 +60,5 @@ class DocumentStatisticsResponse(BaseModel):
     avg_chunk_size: float
     embedding_model: str
     ai_ready_count: int
+    total_conversations: Optional[int] = 0
+    total_flashcards: Optional[int] = 0

@@ -52,12 +52,11 @@ export default function StatusBanner() {
           <Icon size={12} className={sending ? 'logo-icon' : ''} style={sending ? { animation: 'spin 1.5s linear infinite' } : {}} />
           {sending ? 'Thinking...' : connectionStatus}
         </span>
-        <span style={{ color: 'var(--text-muted)' }}>&bull; Google Gemini Grounded Model &bull; ChromaDB Store</span>
+        <span style={{ color: 'var(--text-muted)' }}>&bull; Connected to study vault</span>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-        <span>Top-K: {topK}</span>
-        <span>Threshold: {threshold.toFixed(2)}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: '#10b981', fontWeight: 600 }}>
+        <span>Ready to answer from your knowledge</span>
       </div>
     </div>
   );

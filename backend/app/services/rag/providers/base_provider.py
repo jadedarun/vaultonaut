@@ -25,7 +25,8 @@ class BaseLLMProvider(ABC):
         system_prompt: Optional[str] = None,
         temperature: float = 0.2,
         max_tokens: Optional[int] = None,
-        model_override: Optional[str] = None
+        model_override: Optional[str] = None,
+        response_mime_type: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Generates text completion from LLM.

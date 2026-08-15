@@ -121,7 +121,12 @@ export const AIWorkspaceProvider = ({ children }) => {
           created_at: new Date().toISOString()
         };
 
-        updateThreadMessages(resolvedConvId, [...messages, tempUserMsg, assistantMsg]);
+        updateThreadMessages(resolvedConvId, [...currentMsgs, assistantMsg]);
+        
+        if (resolvedConvId !== activeConversationId) {
+          setActiveConversationId(resolvedConvId);
+        }
+
         setConnectionStatus('AI Ready');
         fetchConversations();
       }
@@ -144,14 +149,14 @@ export const AIWorkspaceProvider = ({ children }) => {
           created_at: new Date().toISOString()
         };
 
-        updateThreadMessages(activeConversationId, [...messages, tempUserMsg, failedAssistantMsg]);
+        updateThreadMessages(activeConversationId, [...currentMsgs, failedAssistantMsg]);
         setConnectionStatus('Error');
       }
     } finally {
       setSending(false);
       stopStreaming();
     }
-  }, [activeConversationId, messages, sending, setConnectionStatus, updateThreadMessages, fetchConversations, startStreaming, stopStreaming, clearDraft, showToast]);
+  }, [activeConversationId, messages, sending, setConnectionStatus, updateThreadMessages, setActiveConversationId, fetchConversations, startStreaming, stopStreaming, clearDraft, showToast]);
 
   const retryLastPrompt = useCallback(() => {
     if (lastUserPrompt) {

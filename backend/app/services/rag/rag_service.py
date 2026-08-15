@@ -13,7 +13,7 @@ from app.services.rag.citation_service import citation_service
 from app.services.rag.providers.factory import LLMProviderFactory
 from app.services.rag import conversation_service
 
-NO_CONTEXT_REFUSAL = "I couldn't find enough information in your uploaded knowledge to answer this question."
+NO_CONTEXT_REFUSAL = "I couldn't find enough information in your uploaded documents to answer this question."
 
 
 class RAGService:
@@ -125,17 +125,25 @@ class RAGService:
         llm_start_time = time.time()
 
         # 8. Call Gemini via LLM Provider Interface
-        provider = LLMProviderFactory.get_provider("gemini")
-        llm_output = provider.generate_response(
-            prompt=rag_prompt,
-            system_prompt=system_prompt,
-            temperature=settings.RAG_TEMPERATURE
-        )
+        try:
+            provider = LLMProviderFactory.get_provider("gemini")
+            llm_output = provider.generate_response(
+                prompt=rag_prompt,
+                system_prompt=system_prompt,
+                temperature=settings.RAG_TEMPERATURE
+            )
+            llm_latency_ms = round((time.time() - llm_start_time) * 1000, 2)
+            assistant_content = llm_output.get("content", "").strip() or NO_CONTEXT_REFUSAL
+            model_name = llm_output.get("model", settings.GEMINI_MODEL)
+            grounded = assistant_content != NO_CONTEXT_REFUSAL
+        except Exception as err:
+            logger.error(f"Gemini API generation error: {err}")
+            llm_latency_ms = round((time.time() - llm_start_time) * 1000, 2)
+            assistant_content = "Relevant document content was retrieved, but Gemini could not generate the answer."
+            model_name = settings.GEMINI_MODEL
+            grounded = False
 
-        llm_latency_ms = round((time.time() - llm_start_time) * 1000, 2)
         total_latency_ms = round((time.time() - start_time) * 1000, 2)
-
-        assistant_content = llm_output.get("content", "").strip() or NO_CONTEXT_REFUSAL
 
         meta_payload = {
             "retrieved_count": len(citations),
@@ -143,8 +151,8 @@ class RAGService:
             "retrieval_latency_ms": retrieval_latency_ms,
             "llm_latency_ms": llm_latency_ms,
             "total_latency_ms": total_latency_ms,
-            "grounded": True,
-            "model_name": llm_output.get("model", settings.GEMINI_MODEL)
+            "grounded": grounded,
+            "model_name": model_name
         }
 
         # 9. Persist Assistant Response in DB
@@ -164,10 +172,10 @@ class RAGService:
             "message_id": assistant_msg.id,
             "role": "assistant",
             "content": assistant_content,
-            "grounded": True,
+            "grounded": grounded,
             "retrieved_count": len(citations),
             "citations": citations,
-            "model_name": llm_output.get("model", settings.GEMINI_MODEL),
+            "model_name": model_name,
             "latency_ms": meta_payload
         }
 

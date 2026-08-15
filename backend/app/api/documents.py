@@ -182,3 +182,133 @@ def delete_document(
     """
     document_service.delete_document(db, id, current_user.id)
     return {"success": True, "message": "Document deleted successfully"}
+
+
+@router.get("/{id}/flashcards", summary="Get Document Study Flashcards")
+def get_document_flashcards(
+    id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    import json
+    from app.models.knowledge import Knowledge
+    # Verify document exists and belongs to current user
+    doc = document_service.get_document_by_id(db, id, current_user.id)
+    
+    # Check if flashcards knowledge entry exists
+    flashcards_entry = db.query(Knowledge).filter(
+        Knowledge.user_id == current_user.id,
+        Knowledge.category == "Flashcards",
+        Knowledge.title == f"Flashcards - {str(id)}"
+    ).first()
+    
+    if flashcards_entry:
+        try:
+            cards = json.loads(flashcards_entry.content)
+        except Exception:
+            cards = []
+        return {
+            "status": "completed",
+            "document_id": id,
+            "flashcards": cards
+        }
+    
+    # Check if currently generating
+    from app.services.document_service import is_generating_flashcards
+    if is_generating_flashcards(str(id)):
+        return {
+            "status": "generating",
+            "document_id": id,
+            "flashcards": []
+        }
+        
+    return {
+        "status": "not_started",
+        "document_id": id,
+        "flashcards": []
+    }
+
+
+@router.post("/{id}/flashcards/generate", summary="Trigger Background Flashcard Generation")
+def generate_document_flashcards(
+    id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    doc = document_service.get_document_by_id(db, id, current_user.id)
+    
+    from app.services.document_service import is_generating_flashcards, generate_study_materials_background
+    if is_generating_flashcards(str(id)):
+        return {"status": "generating", "message": "Generation is already in progress."}
+        
+    # Fetch document chunks text to generate flashcards
+    from app.models.chunk import DocumentChunk
+    chunks = db.query(DocumentChunk).filter(DocumentChunk.document_id == id).order_by(DocumentChunk.chunk_index).all()
+    if not chunks:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No document chunks found. Document must be processed first."
+        )
+        
+    doc_text = "\n\n".join([c.chunk_text for c in chunks])
+    
+    try:
+        import threading
+        thread = threading.Thread(
+            target=generate_study_materials_background,
+            args=(str(id), str(current_user.id), doc_text)
+        )
+        thread.daemon = True
+        thread.start()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start generation thread: {str(e)}"
+        )
+        
+    return {"status": "generating", "message": "Flashcard generation started in the background."}
+
+
+@router.get("/{id}/quiz", summary="Get Document Study Quiz")
+def get_document_quiz(
+    id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    import json
+    from app.models.knowledge import Knowledge
+    # Verify document exists and belongs to current user
+    doc = document_service.get_document_by_id(db, id, current_user.id)
+    
+    # Check if quiz knowledge entry exists
+    quiz_entry = db.query(Knowledge).filter(
+        Knowledge.user_id == current_user.id,
+        Knowledge.category == "Quizzes",
+        Knowledge.title == f"Quiz - {str(id)}"
+    ).first()
+    
+    if quiz_entry:
+        try:
+            quiz_data = json.loads(quiz_entry.content)
+        except Exception:
+            quiz_data = {"questions": []}
+        return {
+            "status": "completed",
+            "document_id": id,
+            "quiz": quiz_data
+        }
+    
+    # Check if currently generating
+    from app.services.document_service import is_generating_flashcards
+    if is_generating_flashcards(str(id)):
+        return {
+            "status": "generating",
+            "document_id": id,
+            "quiz": {"questions": []}
+        }
+        
+    return {
+        "status": "not_started",
+        "document_id": id,
+        "quiz": {"questions": []}
+    }

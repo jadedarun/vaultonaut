@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Sparkles, 
@@ -18,29 +19,72 @@ import {
 import GradientText from '../GradientText';
 import { useKnowledge } from '../../context/KnowledgeContext';
 import { useDocuments } from '../../context/DocumentContext';
+import * as chatApi from '../../services/chatApi';
 
 export default function DashboardSection({ user, onNavigate }) {
-  const { items, total } = useKnowledge();
+  const { items } = useKnowledge();
   const { documents, stats: docStats } = useDocuments();
+  const [recentConversations, setRecentConversations] = useState([]);
 
-  const totalWords = items.reduce((acc, cur) => acc + (cur.word_count || 0), 0);
-  const totalFavs = items.filter(i => i.favorite).length;
+  useEffect(() => {
+    async function loadRecent() {
+      try {
+        const history = await chatApi.fetchConversations();
+        if (Array.isArray(history)) {
+          setRecentConversations(history.slice(0, 4));
+        }
+      } catch (err) {
+        console.warn('Failed to load recent conversations:', err);
+      }
+    }
+    loadRecent();
+  }, []);
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return '0 KB';
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
+  };
+
+  const formatRelativeTime = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+      
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return `${diffDays}d ago`;
+    } catch (e) {
+      return '';
+    }
+  };
 
   const stats = [
-    { label: 'Knowledge Entries', value: total || items.length, change: 'Authenticated Vault' },
-    { label: 'Vectors Indexed', value: docStats.vectors_stored || 0, change: 'ChromaDB Local Store' },
-    { label: 'Chunks Created', value: docStats.chunks_created || 0, change: '800ch Recursive Splitter' },
-    { label: 'Embedding Model', value: docStats.embedding_model || 'all-MiniLM-L6-v2', change: '384 Dense Dimensions' },
-    { label: 'Storage Used', value: `${docStats.total_storage_mb || 0} MB`, change: 'Secure Files' },
-    { label: 'AI Ready Documents', value: docStats.ai_ready_count || documents.length, change: 'Vector Search Active' }
+    { label: 'Documents', value: `${docStats.total_documents || documents.length} Files`, change: 'Your knowledge library' },
+    { label: 'Ready to Use', value: `${docStats.ai_ready_count || docStats.completed_count || 0} Ready`, change: 'Available for AI questions' },
+    { label: 'Storage', value: `${docStats.total_storage_mb || 0} MB`, change: 'Documents stored' },
+    { label: 'Conversations', value: `${docStats.total_conversations || 0} Threads`, change: 'AI study sessions' },
+    { label: 'Study Cards', value: `${docStats.total_flashcards || 0} Cards`, change: 'Ready for review' }
   ];
 
   const quickActions = [
-    { title: 'Knowledge Vault', desc: 'Create, search, filter and manage knowledge', icon: FileText, tabIndex: 1 },
-    { title: 'Upload Center', desc: 'Add PDFs, Docs, URLs or YouTube transcripts', icon: Upload, tabIndex: 2 },
-    { title: 'AI Workspace', desc: 'Ask questions with precise source citations', icon: Send, tabIndex: 3 },
-    { title: 'Learning Studio', desc: 'Review flashcards & test quiz readiness', icon: GraduationCap, tabIndex: 4 }
+    { title: 'Knowledge Vault', desc: 'Browse and manage your saved knowledge', icon: FileText, tabIndex: 1 },
+    { title: 'Upload Center', desc: 'Upload PDFs and other learning materials', icon: Upload, tabIndex: 2 },
+    { title: 'AI Workspace', desc: 'Ask questions and get answers from your documents', icon: Send, tabIndex: 3 },
+    { title: 'Learning Studio', desc: 'Turn your knowledge into flashcards, quizzes and study material', icon: GraduationCap, tabIndex: 4 }
   ];
+
+  const handleConversationClick = (convId) => {
+    localStorage.setItem('active_conversation_id', convId);
+    onNavigate(3);
+  };
 
   return (
     <motion.div
@@ -52,7 +96,7 @@ export default function DashboardSection({ user, onNavigate }) {
     >
       {/* Hero Welcome Banner Card */}
       <div className="glass-card hero-banner">
-        <span className="badge-tag">Milestone 4 &bull; Core Data Layer</span>
+        <span className="badge-tag">Vaultonaut &bull; AI Study Assistant</span>
         <h1 className="hero-banner-title" style={{ marginTop: '0.6rem', marginBottom: '0.6rem' }}>
           Welcome back,{' '}
           <GradientText colors={['#ffffff', '#e4e4e7', '#a1a1aa', '#ffffff']} animationSpeed={5} showBorder={false}>
@@ -60,7 +104,7 @@ export default function DashboardSection({ user, onNavigate }) {
           </GradientText> 👋
         </h1>
         <p style={{ color: 'var(--text-secondary)', maxWidth: '750px', fontSize: '1.05rem', lineHeight: '1.5', margin: '0 0 1.2rem 0' }}>
-          Vaultonaut is your personal knowledge vault. Securely create, search, edit, tag, pin, and favorite your knowledge documents backed by PostgreSQL and JWT authentication.
+          Vaultonaut is your personal AI-powered study assistant. Securely upload learning materials, ask questions with precise source citations, and convert documents into interactive flashcards and quizzes.
         </p>
 
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -80,9 +124,9 @@ export default function DashboardSection({ user, onNavigate }) {
       <div className="glass-card" style={{ padding: '1.5rem' }}>
         <div className="card-header-row" style={{ marginBottom: '1.2rem' }}>
           <h2 className="card-title">
-            <Database size={20} className="logo-icon" /> Vault Knowledge Statistics
+            <Database size={20} className="logo-icon" /> Workspace Overview
           </h2>
-          <span className="badge-tag">JWT Protected</span>
+          <span className="badge-tag">AI Powered</span>
         </div>
 
         <div className="stat-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
@@ -115,7 +159,7 @@ export default function DashboardSection({ user, onNavigate }) {
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
-                  justify: 'space-between',
+                  justifyContent: 'space-between',
                   minHeight: '130px',
                   transition: 'all 0.2s ease'
                 }}
@@ -140,7 +184,7 @@ export default function DashboardSection({ user, onNavigate }) {
         <div className="glass-card">
           <div className="card-header-row">
             <h2 className="card-title">
-              <FileText size={18} className="logo-icon" /> Recent Knowledge Items
+              <FileText size={18} className="logo-icon" /> Recent Documents
             </h2>
             <button className="btn-white-outline" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }} onClick={() => onNavigate(1)}>
               View All
@@ -148,12 +192,13 @@ export default function DashboardSection({ user, onNavigate }) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '1rem' }}>
-            {items.length === 0 ? (
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', padding: '1rem 0' }}>No documents created yet.</p>
+            {documents.length === 0 ? (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', padding: '1rem 0' }}>No documents uploaded yet.</p>
             ) : (
-              items.slice(0, 4).map((f) => (
+              documents.slice(0, 4).map((doc) => (
                 <div 
-                  key={f.id} 
+                  key={doc.id} 
+                  onClick={() => onNavigate(1)}
                   style={{ 
                     display: 'flex', 
                     justifyContent: 'space-between', 
@@ -162,15 +207,30 @@ export default function DashboardSection({ user, onNavigate }) {
                     background: 'rgba(255,255,255,0.02)', 
                     borderRadius: '0.5rem', 
                     border: '1px solid rgba(255,255,255,0.05)', 
-                    fontSize: '0.85rem' 
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
                   }}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
-                    <FileText size={15} color="var(--color-arctic-4)" /> {f.title}
-                  </span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
-                    {f.category}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                      <FileText size={15} color="var(--color-arctic-4)" /> {doc.original_filename}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      {doc.file_extension.replace('.', '').toUpperCase()} &bull; {formatFileSize(doc.file_size)}
+                    </span>
+                  </div>
+                  <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <span style={{ 
+                      fontSize: '0.75rem', 
+                      color: doc.status === 'completed' ? '#10b981' : '#f59e0b',
+                      fontWeight: 600
+                    }}>
+                      {doc.status === 'completed' ? 'AI Ready' : 'Processing'}
+                    </span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                      {formatRelativeTime(doc.uploaded_at)}
+                    </span>
+                  </div>
                 </div>
               ))
             )}
@@ -189,28 +249,30 @@ export default function DashboardSection({ user, onNavigate }) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '1rem' }}>
-            {[
-              { query: "How does RAG semantic chunking improve response accuracy?", time: "2h ago" },
-              { query: "Summarize the key differences between PostgreSQL & ChromaDB", time: "4h ago" },
-              { query: "Generate a 5-question quiz on FastAPI dependency injection", time: "1d ago" }
-            ].map((c, i) => (
-              <div 
-                key={i}
-                onClick={() => onNavigate(3)}
-                style={{ 
-                  padding: '0.7rem 0.9rem', 
-                  background: 'rgba(255,255,255,0.02)', 
-                  borderRadius: '0.5rem', 
-                  border: '1px solid rgba(255,255,255,0.05)', 
-                  cursor: 'pointer'
-                }}
-              >
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 500 }}>"{c.query}"</p>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', display: 'block', marginTop: '0.3rem' }}>
-                  {c.time} &bull; Grounded Answer
-                </span>
-              </div>
-            ))}
+            {recentConversations.length === 0 ? (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', padding: '1rem 0' }}>No conversations started yet.</p>
+            ) : (
+              recentConversations.map((c) => (
+                <div 
+                  key={c.id}
+                  onClick={() => handleConversationClick(c.id)}
+                  style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    padding: '0.7rem 0.9rem', 
+                    background: 'rgba(255,255,255,0.02)', 
+                    borderRadius: '0.5rem', 
+                    border: '1px solid rgba(255,255,255,0.05)', 
+                    cursor: 'pointer'
+                  }}
+                >
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 500 }}>"{c.title || 'Untitled Conversation'}"</p>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', display: 'block', marginTop: '0.3rem' }}>
+                    {formatRelativeTime(c.updated_at)} &bull; Answered
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
