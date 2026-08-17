@@ -16,7 +16,7 @@ export default function DocumentGrouping({ documentTitle = 'Document', chunks = 
           padding: '0.6rem 0.8rem',
           background: 'rgba(255, 255, 255, 0.03)',
           border: 'none',
-          color: '#fff',
+          color: 'var(--color-arctic-1)',
           cursor: 'pointer',
           fontSize: '0.82rem',
           fontWeight: 600

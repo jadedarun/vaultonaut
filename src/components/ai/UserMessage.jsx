@@ -8,7 +8,7 @@ export default function UserMessage({ message }) {
           height: '32px',
           borderRadius: '50%',
           background: 'rgba(255, 255, 255, 0.15)',
-          color: '#fff',
+          color: 'var(--color-arctic-1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -24,7 +24,7 @@ export default function UserMessage({ message }) {
         className="msg-bubble"
         style={{
           background: 'var(--color-arctic-1)',
-          color: '#000',
+          color: 'var(--chat-user-text)',
           fontWeight: 500,
           borderRadius: '1rem 0.2rem 1rem 1rem',
           padding: '0.8rem 1.1rem',

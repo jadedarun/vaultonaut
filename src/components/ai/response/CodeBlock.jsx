@@ -56,7 +56,7 @@ export default function CodeBlock({ language = 'text', code = '' }) {
           }}
         >
           {copied ? <Check size={12} /> : <Copy size={12} />}
-          {copied ? 'Copied ✓' : 'Copy Code'}
+          {copied ? 'Copied' : 'Copy Code'}
         </button>
       </div>
 

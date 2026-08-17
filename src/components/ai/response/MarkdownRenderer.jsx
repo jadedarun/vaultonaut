@@ -113,11 +113,11 @@ function TextMarkdownBlock({ text }) {
 
     // Heading H1 - H6
     if (trimmed.startsWith('# ')) {
-      elements.push(<h1 key={index} style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', margin: '1rem 0 0.5rem 0' }}>{renderInlineFormatting(trimmed.slice(2))}</h1>);
+      elements.push(<h1 key={index} style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-arctic-1)', margin: '1rem 0 0.5rem 0' }}>{renderInlineFormatting(trimmed.slice(2))}</h1>);
     } else if (trimmed.startsWith('## ')) {
       elements.push(<h2 key={index} style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--color-arctic-1)', margin: '0.8rem 0 0.4rem 0' }}>{renderInlineFormatting(trimmed.slice(3))}</h2>);
     } else if (trimmed.startsWith('### ')) {
-      elements.push(<h3 key={index} style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: '0.6rem 0 0.3rem 0' }}>{renderInlineFormatting(trimmed.slice(4))}</h3>);
+      elements.push(<h3 key={index} style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--color-arctic-1)', margin: '0.6rem 0 0.3rem 0' }}>{renderInlineFormatting(trimmed.slice(4))}</h3>);
     } else if (trimmed.startsWith('> ')) {
       // Blockquote
       elements.push(
@@ -155,7 +155,7 @@ function renderInlineFormatting(text) {
     const boldParts = part.split(/(\*\*[^\*]+\*\*)/g);
     return boldParts.map((bp, j) => {
       if (bp.startsWith('**') && bp.endsWith('**')) {
-        return <strong key={j} style={{ color: '#fff', fontWeight: 600 }}>{bp.slice(2, -2)}</strong>;
+        return <strong key={j} style={{ color: 'var(--color-arctic-1)', fontWeight: 600 }}>{bp.slice(2, -2)}</strong>;
       }
 
       // Link [text](url)

@@ -38,7 +38,7 @@ export default function SourcePanel() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.82rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ color: 'var(--text-muted)' }}>Document:</span>
-          <span style={{ fontWeight: 600, color: '#fff' }}>{selectedCitation.document_title || selectedCitation.filename}</span>
+          <span style={{ fontWeight: 600, color: 'var(--color-arctic-1)' }}>{selectedCitation.document_title || selectedCitation.filename}</span>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -67,7 +67,7 @@ export default function SourcePanel() {
               padding: '0.9rem', 
               background: 'rgba(255,255,255,0.03)', 
               borderRadius: '0.5rem', 
-              border: '1px solid rgba(255,255,255,0.08)', 
+              border: '1px solid var(--glass-border)', 
               fontFamily: 'var(--font-mono)', 
               fontSize: '0.8rem', 
               lineHeight: '1.5', 

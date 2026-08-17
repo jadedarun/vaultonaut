@@ -14,7 +14,7 @@ export default function KeyboardShortcutCard() {
     <div style={{ padding: '1.2rem', borderRadius: '0.65rem', background: 'rgba(255, 255, 255, 0.025)', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <Keyboard size={18} color="var(--color-arctic-1)" />
-        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#fff' }}>Keyboard Shortcuts Reference Guide</h4>
+        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>Keyboard Shortcuts Reference Guide</h4>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.8rem' }}>

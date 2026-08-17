@@ -62,3 +62,7 @@ class DocumentStatisticsResponse(BaseModel):
     ai_ready_count: int
     total_conversations: Optional[int] = 0
     total_flashcards: Optional[int] = 0
+    total_questions: Optional[int] = 0
+    total_quizzes: Optional[int] = 0
+    total_flashcard_decks: Optional[int] = 0
+    total_study_materials: Optional[int] = 0

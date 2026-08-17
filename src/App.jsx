@@ -96,6 +96,9 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Theme state for reactive header button styling
+  const [theme, setTheme] = useState(() => localStorage.getItem('vaultonaut_theme') || 'dark');
+
   // Onboarding & LocalStorage Defaults Migration
   useEffect(() => {
     const currentThreshold = localStorage.getItem('vaultonaut_similarity_threshold');
@@ -107,6 +110,23 @@ export default function App() {
     if (!currentTopK) {
       localStorage.setItem('vaultonaut_top_k', '5');
     }
+    
+    // Restore Visual Theme
+    const savedTheme = localStorage.getItem('vaultonaut_theme') || 'dark';
+    if (savedTheme === 'light') {
+      document.documentElement.classList.add('light-theme');
+    } else {
+      document.documentElement.classList.remove('light-theme');
+    }
+
+    // Reactively update theme state
+    const handleThemeChange = () => {
+      setTheme(localStorage.getItem('vaultonaut_theme') || 'dark');
+    };
+    window.addEventListener('vaultonaut-theme-change', handleThemeChange);
+    return () => {
+      window.removeEventListener('vaultonaut-theme-change', handleThemeChange);
+    };
   }, []);
 
   // State
@@ -208,11 +228,11 @@ export default function App() {
 
       // Simulate parsing stages
       setTimeout(() => {
-        setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, progress: 40, status: 'Generating embeddings...' } : t));
+        setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, progress: 40, status: 'Understanding...' } : t));
       }, 1000);
 
       setTimeout(() => {
-        setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, progress: 80, status: 'Storing in ChromaDB...' } : t));
+        setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, progress: 80, status: 'Ready' } : t));
       }, 2000);
 
       setTimeout(() => {
@@ -250,7 +270,7 @@ export default function App() {
     setUrl('');
 
     setTimeout(() => {
-      setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, progress: 60, status: 'Chunking text & embedding...' } : t));
+      setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, progress: 60, status: 'Understanding...' } : t));
     }, 1200);
 
     setTimeout(() => {
@@ -364,10 +384,10 @@ export default function App() {
       <aside className="sidebar-container">
         <div>
           <div className="logo-section">
-            <HardDrive size={28} className="logo-icon" style={{ color: '#ffffff' }} />
+            <HardDrive size={28} className="logo-icon" style={{ color: 'var(--color-arctic-1)' }} />
             <span className="logo-text">
               <GradientText
-                colors={['#ffffff', '#e4e4e7', '#a1a1aa', '#ffffff']}
+                colors={theme === 'light' ? ['#111827', '#374151', '#4b5563', '#111827'] : ['#ffffff', '#e4e4e7', '#a1a1aa', '#ffffff']}
                 animationSpeed={5}
                 showBorder={false}
               >
@@ -379,15 +399,15 @@ export default function App() {
           <div className="sidebar-nav">
             <LineSidebar
               items={tabs}
-              accentColor="#ffffff"
-              textColor="#a1a1aa"
-              markerColor="#71717a"
+              accentColor="var(--sidebar-active-text)"
+              textColor="var(--sidebar-text)"
+              markerColor="var(--text-muted)"
               showIndex={true}
               showMarker={true}
               proximityRadius={90}
               maxShift={20}
               falloff="smooth"
-              itemGap={18}
+              itemGap={13}
               fontSize={1.0}
               smoothing={120}
               defaultActive={activeTab}
@@ -399,12 +419,18 @@ export default function App() {
         <div className="sidebar-footer">
           <div className="system-status">
             <span className="status-dot"></span>
-            <span>RAG Engine Online</span>
+            <span>{localStorage.getItem('vaultonaut_dev_mode') === 'true' ? 'RAG Engine Online' : 'Connected'}</span>
           </div>
-          <div className="db-stats">
-            <p>Chroma vectors: {stats.vectors_stored || 0}</p>
-            <p>Collections: {collections.length}</p>
-          </div>
+          {localStorage.getItem('vaultonaut_dev_mode') === 'true' ? (
+            <div className="db-stats">
+              <p>Chroma vectors: {stats.vectors_stored || 0}</p>
+              <p>Collections: {collections.length}</p>
+            </div>
+          ) : (
+            <div className="db-stats">
+              <p>Ready to answer from your knowledge</p>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -416,10 +442,22 @@ export default function App() {
           <div className="nav-actions">
             {/* The white buttons requested by the user */}
             <button 
-              className="btn-white-outline" 
+              className={theme === 'light' ? 'btn-white-solid' : 'btn-white-outline'} 
               onClick={() => setTurboMode(!turboMode)} 
               title="Toggle Turbo Mode (Disables GPU WebGL shaders for max FPS)"
-              style={{ borderColor: turboMode ? '#10b981' : 'rgba(255,255,255,0.25)', color: turboMode ? '#10b981' : '#ffffff' }}
+              style={
+                theme === 'light'
+                  ? { 
+                      background: turboMode ? '#10b981' : '#111827', 
+                      borderColor: turboMode ? '#10b981' : '#111827', 
+                      color: '#ffffff',
+                      boxShadow: 'none'
+                    }
+                  : { 
+                      borderColor: turboMode ? '#10b981' : 'var(--glass-border)', 
+                      color: turboMode ? '#10b981' : 'var(--color-arctic-1)' 
+                    }
+              }
             >
               <Zap size={16} />
               <span>{turboMode ? 'Turbo On (120 FPS)' : 'Turbo Mode'}</span>
@@ -433,7 +471,7 @@ export default function App() {
               About
             </button>
             {user && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.35rem 0.75rem', background: 'rgba(255,255,255,0.06)', borderRadius: '2rem', border: '1px solid rgba(255,255,255,0.12)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.35rem 0.75rem', background: 'var(--glass-border)', borderRadius: '2rem', border: '1px solid var(--glass-border)' }}>
                 <img src={user.photoURL} alt={user.displayName} style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover' }} />
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f4f4f5' }}>{user.firstName}</span>
               </div>
@@ -563,27 +601,27 @@ export default function App() {
               <div className="modal-section-title">Architectural Stack</div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                 <tbody>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
                     <td style={{ padding: '0.6rem 0', fontWeight: '600', width: '130px', color: 'var(--color-arctic-3)' }}>Backend Framework</td>
                     <td style={{ padding: '0.6rem 0', color: 'var(--text-secondary)' }}>FastAPI (Python 3.12+) & Uvicorn</td>
                   </tr>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
                     <td style={{ padding: '0.6rem 0', fontWeight: '600', color: 'var(--color-arctic-3)' }}>Frontend UI</td>
                     <td style={{ padding: '0.6rem 0', color: 'var(--text-secondary)' }}>React.js (Vite), Vanilla CSS, Framer Motion, OGL, Lucide</td>
                   </tr>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
                     <td style={{ padding: '0.6rem 0', fontWeight: '600', color: 'var(--color-arctic-3)' }}>Vector Database</td>
                     <td style={{ padding: '0.6rem 0', color: 'var(--text-secondary)' }}>Chroma DB (Local Storage)</td>
                   </tr>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
                     <td style={{ padding: '0.6rem 0', fontWeight: '600', color: 'var(--color-arctic-3)' }}>RAG Pipeline</td>
                     <td style={{ padding: '0.6rem 0', color: 'var(--text-secondary)' }}>LangChain, RecursiveCharacterTextSplitter</td>
                   </tr>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
                     <td style={{ padding: '0.6rem 0', fontWeight: '600', color: 'var(--color-arctic-3)' }}>Embeddings</td>
                     <td style={{ padding: '0.6rem 0', color: 'var(--text-secondary)' }}>sentence-transformers (all-MiniLM-L6-v2)</td>
                   </tr>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
                     <td style={{ padding: '0.6rem 0', fontWeight: '600', color: 'var(--color-arctic-3)' }}>LLM Integrator</td>
                     <td style={{ padding: '0.6rem 0', color: 'var(--text-secondary)' }}>Google Gemini API Service Layer (Abstracted interface)</td>
                   </tr>
@@ -595,7 +633,7 @@ export default function App() {
               </table>
 
               <div className="modal-section-title" style={{ marginTop: '0.5rem' }}>Core System Pipeline Flow</div>
-              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.8rem', lineHeight: '1.45', fontFamily: 'var(--font-mono)', color: 'var(--color-arctic-2)' }}>
+              <div style={{ background: 'var(--input-bg)', padding: '1rem', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.8rem', lineHeight: '1.45', fontFamily: 'var(--font-mono)', color: 'var(--color-arctic-2)' }}>
                 Upload Document &rarr; Parse text (PyMuPDF/docx) &rarr; Segment into Chunks &rarr; Embed (Sentence-Transformers) &rarr; Save Vectors (ChromaDB)
                 <br /><br />
                 User Query &rarr; Query Embed &rarr; Semantic Retrieve (Cosine Similarity) &rarr; Context Synthesis &rarr; Prompt Gemini LLM &rarr; Cite Source References

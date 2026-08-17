@@ -421,8 +421,12 @@ def get_document_statistics(db: Session, user_id: uuid.UUID) -> Dict[str, Any]:
     file_types = {ext.replace(".", "").upper(): count for ext, count in type_counts}
 
     # Fetch Conversations and Flashcards
-    from app.models.conversation import Conversation
+    from app.models.conversation import Conversation, ConversationMessage
     total_conversations = db.query(func.count(Conversation.id)).filter(Conversation.user_id == user_id).scalar() or 0
+    total_questions = db.query(func.count(ConversationMessage.id)).join(
+        Conversation, ConversationMessage.conversation_id == Conversation.id
+    ).filter(Conversation.user_id == user_id, ConversationMessage.role == "user").scalar() or 0
+    
     total_flashcards = 0
     flashcard_entries = db.query(Knowledge).filter(Knowledge.user_id == user_id, Knowledge.category == "Flashcards").all()
     for entry in flashcard_entries:
@@ -431,6 +435,14 @@ def get_document_statistics(db: Session, user_id: uuid.UUID) -> Dict[str, Any]:
             total_flashcards += len(cards)
         except Exception:
             pass
+
+    total_quizzes = db.query(func.count(Knowledge.id)).filter(
+        Knowledge.user_id == user_id,
+        Knowledge.category == "Quizzes"
+    ).scalar() or 0
+    
+    total_flashcard_decks = len(flashcard_entries)
+    total_study_materials = total_flashcard_decks + total_quizzes
 
     return {
         "total_documents": total_documents,
@@ -447,5 +459,9 @@ def get_document_statistics(db: Session, user_id: uuid.UUID) -> Dict[str, Any]:
         "embedding_model": "all-MiniLM-L6-v2",
         "ai_ready_count": completed_count,
         "total_conversations": total_conversations,
-        "total_flashcards": total_flashcards
+        "total_flashcards": total_flashcards,
+        "total_questions": total_questions,
+        "total_quizzes": total_quizzes,
+        "total_flashcard_decks": total_flashcard_decks,
+        "total_study_materials": total_study_materials
     }

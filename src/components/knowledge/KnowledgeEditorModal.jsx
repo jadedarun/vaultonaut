@@ -132,14 +132,14 @@ export default function KnowledgeEditorModal({ isOpen, onClose, onSave, initialD
                 className="input-field"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                style={{ background: 'rgba(10, 14, 23, 0.8)' }}
+                style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)', border: '1px solid var(--glass-border)' }}
               >
-                <option value="General">General</option>
-                <option value="AI Engineering">AI Engineering</option>
-                <option value="System Design">System Design</option>
-                <option value="Machine Learning">Machine Learning</option>
-                <option value="College Notes">College Notes</option>
-                <option value="Personal Notes">Personal Notes</option>
+                <option value="General" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>General</option>
+                <option value="AI Engineering" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>AI Engineering</option>
+                <option value="System Design" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>System Design</option>
+                <option value="Machine Learning" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>Machine Learning</option>
+                <option value="College Notes" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>College Notes</option>
+                <option value="Personal Notes" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>Personal Notes</option>
               </select>
             </div>
 
@@ -173,7 +173,7 @@ export default function KnowledgeEditorModal({ isOpen, onClose, onSave, initialD
                     alignItems: 'center', 
                     gap: '0.3rem', 
                     padding: '0.2rem 0.6rem', 
-                    background: 'rgba(255,255,255,0.06)', 
+                    background: 'var(--glass-border)', 
                     borderRadius: '0.3rem', 
                     fontSize: '0.75rem', 
                     fontFamily: 'var(--font-mono)', 
@@ -215,7 +215,7 @@ export default function KnowledgeEditorModal({ isOpen, onClose, onSave, initialD
                 onChange={(e) => setFavorite(e.target.checked)}
                 style={{ accentColor: '#ffffff' }}
               />
-              Mark as Favorite ⭐
+              Mark as Favorite
             </label>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
@@ -225,7 +225,7 @@ export default function KnowledgeEditorModal({ isOpen, onClose, onSave, initialD
                 onChange={(e) => setPinned(e.target.checked)}
                 style={{ accentColor: '#ffffff' }}
               />
-              Pin to Top 📌
+              Pin to Top
             </label>
           </div>
 

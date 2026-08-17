@@ -46,7 +46,7 @@ export default function ConversationSidebar() {
           <button 
             className="mobile-only"
             onClick={() => setSidebarOpen(false)}
-            style={{ display: 'none', background: 'none', border: 'none', color: '#fff', cursor: 'pointer', marginLeft: '0.5rem' }}
+            style={{ display: 'none', background: 'none', border: 'none', color: 'var(--color-arctic-1)', cursor: 'pointer', marginLeft: '0.5rem' }}
           >
             <X size={18} />
           </button>

@@ -23,7 +23,7 @@ export default function AnalyticsCard({ title, value, subtitle, icon: Icon, tren
         )}
       </div>
 
-      <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>
+      <div style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--color-arctic-1)', fontFamily: 'var(--font-mono)' }}>
         {value}
       </div>
 

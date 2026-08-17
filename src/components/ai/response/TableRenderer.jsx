@@ -37,7 +37,7 @@ export default function TableRenderer({ headers = [], rows = [] }) {
               }}
             >
               {row.map((cell, cIdx) => (
-                <td key={cIdx} style={{ padding: '0.55rem 0.9rem', color: '#fff' }}>
+                <td key={cIdx} style={{ padding: '0.55rem 0.9rem', color: 'var(--color-arctic-1)' }}>
                   {cell}
                 </td>
               ))}

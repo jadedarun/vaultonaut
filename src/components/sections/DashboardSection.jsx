@@ -101,7 +101,7 @@ export default function DashboardSection({ user, onNavigate }) {
           Welcome back,{' '}
           <GradientText colors={['#ffffff', '#e4e4e7', '#a1a1aa', '#ffffff']} animationSpeed={5} showBorder={false}>
             {user?.displayName || user?.firstName || 'Vaultonaut'}
-          </GradientText> 👋
+          </GradientText>
         </h1>
         <p style={{ color: 'var(--text-secondary)', maxWidth: '750px', fontSize: '1.05rem', lineHeight: '1.5', margin: '0 0 1.2rem 0' }}>
           Vaultonaut is your personal AI-powered study assistant. Securely upload learning materials, ask questions with precise source citations, and convert documents into interactive flashcards and quizzes.
@@ -131,7 +131,7 @@ export default function DashboardSection({ user, onNavigate }) {
 
         <div className="stat-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
           {stats.map((stat, i) => (
-            <div key={i} className="stat-item" style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.6rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div key={i} className="stat-item" style={{ padding: '1rem', background: 'var(--input-bg)', borderRadius: '0.6rem', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div className="stat-val" style={{ fontSize: '1.6rem', fontWeight: '700', color: 'var(--color-arctic-1)' }}>{stat.value}</div>
               <div className="stat-lbl" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>{stat.label}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '0.2rem' }}>{stat.change}</div>
@@ -204,7 +204,7 @@ export default function DashboardSection({ user, onNavigate }) {
                     justifyContent: 'space-between', 
                     alignItems: 'center',
                     padding: '0.7rem 0.9rem', 
-                    background: 'rgba(255,255,255,0.02)', 
+                    background: 'var(--input-bg)', 
                     borderRadius: '0.5rem', 
                     border: '1px solid rgba(255,255,255,0.05)', 
                     fontSize: '0.85rem',
@@ -260,7 +260,7 @@ export default function DashboardSection({ user, onNavigate }) {
                     display: 'flex', 
                     flexDirection: 'column',
                     padding: '0.7rem 0.9rem', 
-                    background: 'rgba(255,255,255,0.02)', 
+                    background: 'var(--input-bg)', 
                     borderRadius: '0.5rem', 
                     border: '1px solid rgba(255,255,255,0.05)', 
                     cursor: 'pointer'

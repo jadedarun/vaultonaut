@@ -69,7 +69,7 @@ export default function ConversationItem({ conversation }) {
                 background: 'rgba(0,0,0,0.5)',
                 border: '1px solid var(--color-arctic-1)',
                 borderRadius: '0.3rem',
-                color: '#fff',
+                color: 'var(--color-arctic-1)',
                 fontSize: '0.82rem',
                 padding: '0.1rem 0.4rem',
                 width: '100%'

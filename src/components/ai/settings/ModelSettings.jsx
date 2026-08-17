@@ -23,15 +23,15 @@ export default function ModelSettings({ settings }) {
     <div style={{ padding: '1.2rem', borderRadius: '0.65rem', background: 'rgba(255, 255, 255, 0.025)', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <Cpu size={18} color="var(--color-arctic-1)" />
-        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#fff' }}>LLM Generation Parameters</h4>
+        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>LLM Generation Parameters</h4>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.9rem' }}>
         {/* Temperature Slider */}
-        <div style={{ padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ padding: '0.8rem', borderRadius: '0.5rem', background: 'var(--input-bg)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Temperature</span>
-            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>{temp.toFixed(1)}</span>
+            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-arctic-1)', fontFamily: 'var(--font-mono)' }}>{temp.toFixed(1)}</span>
           </div>
           <input
             type="range"
@@ -46,10 +46,10 @@ export default function ModelSettings({ settings }) {
         </div>
 
         {/* Max Tokens Slider */}
-        <div style={{ padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ padding: '0.8rem', borderRadius: '0.5rem', background: 'var(--input-bg)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Max Tokens</span>
-            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>{maxTokens} Tokens</span>
+            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-arctic-1)', fontFamily: 'var(--font-mono)' }}>{maxTokens} Tokens</span>
           </div>
           <input
             type="range"

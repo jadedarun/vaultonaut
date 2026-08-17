@@ -9,11 +9,11 @@ export default function DeveloperPanel({ developerMode, onToggle }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Terminal size={18} color="var(--color-arctic-1)" />
-          <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#fff' }}>Developer Mode & Prompt Inspector</h4>
+          <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>Developer Mode & Prompt Inspector</h4>
         </div>
 
         {/* Toggle Switch */}
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.82rem', color: '#fff' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.82rem', color: 'var(--color-arctic-1)' }}>
           <span>{developerMode ? 'Enabled' : 'Disabled'}</span>
           <input
             type="checkbox"

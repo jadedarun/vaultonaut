@@ -12,6 +12,7 @@ import { X, Database, Eye, Network } from 'lucide-react';
 
 export default function SourcePanel() {
   const { selectedCitation, setSelectedCitation } = useAIWorkspace();
+  const isDevMode = localStorage.getItem('vaultonaut_dev_mode') === 'true';
 
   // Close panel on Escape key
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function SourcePanel() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <Database size={16} color="var(--color-arctic-1)" />
-          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#fff' }}>Source Explorer</h3>
+          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>Source Explorer</h3>
         </div>
 
         <button
@@ -61,18 +62,20 @@ export default function SourcePanel() {
       <DocumentInfo citation={selectedCitation} />
 
       {/* RAG Retrieval Reasoning Insights */}
-      <AIInsights citation={selectedCitation} />
+      {isDevMode && <AIInsights citation={selectedCitation} />}
 
       {/* Similarity & Confidence Badge */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Vector Relevance
-          </span>
-          <ConfidenceIndicator similarityScore={selectedCitation.similarity_score} />
+      {isDevMode && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Vector Relevance
+            </span>
+            <ConfidenceIndicator similarityScore={selectedCitation.similarity_score} />
+          </div>
+          <SimilarityBadge similarityScore={selectedCitation.similarity_score} />
         </div>
-        <SimilarityBadge similarityScore={selectedCitation.similarity_score} />
-      </div>
+      )}
 
       {/* Document Tree Grouping */}
       <DocumentGrouping 
@@ -84,7 +87,7 @@ export default function SourcePanel() {
       {/* Extracted Chunk Content */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          Retrieved Content Chunk (#{selectedCitation.chunk_index || 0})
+          Source Text Excerpt
         </div>
         <ChunkViewer chunkText={selectedCitation.chunk_text || selectedCitation.snippet || selectedCitation.content || 'Retrieved text chunk snippet unavailable.'} />
       </div>
@@ -105,7 +108,7 @@ export default function SourcePanel() {
       </div>
 
       {/* Developer Mode Vector Metadata */}
-      <SourceMetadata citation={selectedCitation} />
+      {isDevMode && <SourceMetadata citation={selectedCitation} />}
     </div>
   );
 }

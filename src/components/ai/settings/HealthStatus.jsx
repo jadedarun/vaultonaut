@@ -35,7 +35,7 @@ export default function HealthStatus({ health }) {
 
   return (
     <div style={{ padding: '1.2rem', borderRadius: '0.65rem', background: 'rgba(255, 255, 255, 0.025)', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-      <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#fff' }}>System Health & Service Diagnostics</h4>
+      <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>System Health & Service Diagnostics</h4>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.9rem' }}>
         {services.map((srv, idx) => (
@@ -44,7 +44,7 @@ export default function HealthStatus({ health }) {
             style={{
               padding: '0.8rem 1rem',
               borderRadius: '0.5rem',
-              background: 'rgba(255,255,255,0.02)',
+              background: 'var(--input-bg)',
               border: `1px solid ${srv.isHealthy ? 'rgba(255,255,255,0.06)' : 'rgba(239,68,68,0.2)'}`,
               display: 'flex',
               justify: 'space-between',
@@ -53,7 +53,7 @@ export default function HealthStatus({ health }) {
             }}
           >
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: '0.84rem', fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{srv.name}</div>
+              <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--color-arctic-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{srv.name}</div>
               <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={srv.detail}>{srv.detail}</div>
             </div>
 
@@ -86,7 +86,7 @@ export default function HealthStatus({ health }) {
               <span>Memory Usage</span>
               <span style={{ fontFamily: 'var(--font-mono)' }}>{diagnostics.memory_usage_percent || 0}%</span>
             </div>
-            <div style={{ height: '5px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+            <div style={{ height: '5px', background: 'var(--glass-border)', borderRadius: '3px', overflow: 'hidden' }}>
               <div style={{ width: `${diagnostics.memory_usage_percent || 0}%`, height: '100%', background: 'var(--color-arctic-1)' }} />
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function HealthStatus({ health }) {
               <span>Disk Space Used</span>
               <span style={{ fontFamily: 'var(--font-mono)' }}>{diagnostics.disk_usage_percent || 0}%</span>
             </div>
-            <div style={{ height: '5px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+            <div style={{ height: '5px', background: 'var(--glass-border)', borderRadius: '3px', overflow: 'hidden' }}>
               <div style={{ width: `${diagnostics.disk_usage_percent || 0}%`, height: '100%', background: '#34d399' }} />
             </div>
           </div>

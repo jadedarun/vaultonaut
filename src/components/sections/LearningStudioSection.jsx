@@ -136,16 +136,16 @@ export default function LearningStudioSection() {
               width: '100%', 
               maxWidth: '450px', 
               padding: '0.55rem 0.8rem', 
-              background: 'rgba(255,255,255,0.02)', 
-              border: '1px solid rgba(255,255,255,0.08)', 
+              background: 'var(--input-bg)', 
+              border: '1px solid var(--glass-border)', 
               borderRadius: '0.5rem', 
-              color: '#fff',
+              color: 'var(--color-arctic-1)',
               fontSize: '0.88rem'
             }}
           >
-            <option value="">-- Choose a document to study --</option>
+            <option value="" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>-- Choose a document to study --</option>
             {documents.filter(d => d.status === 'completed').map(doc => (
-              <option key={doc.id} value={doc.id}>{doc.original_filename}</option>
+              <option key={doc.id} value={doc.id} style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>{doc.original_filename}</option>
             ))}
           </select>
         )}
@@ -183,14 +183,14 @@ export default function LearningStudioSection() {
       ) : status === 'generating' ? (
         <div className="glass-card" style={{ padding: '3rem', textAlign: 'center' }}>
           <RefreshCw size={32} className="spin-icon" style={{ animation: 'spin 2s linear infinite', marginBottom: '1rem', color: 'var(--color-arctic-1)', marginLeft: 'auto', marginRight: 'auto' }} />
-          <h4 style={{ color: '#fff', margin: '0 0 0.5rem 0' }}>Creating study cards...</h4>
+          <h4 style={{ color: 'var(--color-arctic-1)', margin: '0 0 0.5rem 0' }}>Creating study cards...</h4>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>Gemini is synthesizing flashcards and quizzes from your document.</p>
         </div>
       ) : status === 'error' ? (
         <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
           <AlertTriangle size={32} color="#f87171" />
           <div>
-            <h4 style={{ margin: 0, color: '#fff' }}>Failed to load study cards</h4>
+            <h4 style={{ margin: 0, color: 'var(--color-arctic-1)' }}>Failed to load study cards</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0.3rem 0 0 0' }}>There was an error retrieving or generating the AI cards for this document.</p>
           </div>
           <button className="btn-action" onClick={handleManualTrigger} disabled={generatingProgress}>
@@ -204,9 +204,10 @@ export default function LearningStudioSection() {
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', padding: '2rem' }}>
               {flashcards.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Study cards couldn't be generated yet for this document.</p>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.2rem' }}>No study materials available yet.</p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Upload a document to automatically generate flashcards and quizzes.</p>
                   <button className="btn-action" onClick={handleManualTrigger} disabled={generatingProgress}>
-                    {generatingProgress ? 'Generating...' : 'Generate Study Cards'}
+                    {generatingProgress ? 'Generating...' : 'Generate Study Materials'}
                   </button>
                 </div>
               ) : (
@@ -264,16 +265,17 @@ export default function LearningStudioSection() {
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', padding: '2rem' }}>
               {quizQuestions.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>AI study quiz is not generated yet for this document.</p>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.2rem' }}>No study materials available yet.</p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Upload a document to automatically generate flashcards and quizzes.</p>
                   <button className="btn-action" onClick={handleManualTrigger} disabled={generatingProgress}>
-                    {generatingProgress ? 'Generating...' : 'Generate AI Quiz'}
+                    {generatingProgress ? 'Generating...' : 'Generate Quiz Questions'}
                   </button>
                 </div>
               ) : quizIndex >= quizQuestions.length ? (
                 <div style={{ textAlign: 'center', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                   <Award size={48} color="var(--color-arctic-1)" />
                   <div>
-                    <h3 style={{ margin: 0, color: '#fff' }}>Quiz Completed!</h3>
+                    <h3 style={{ margin: 0, color: 'var(--color-arctic-1)' }}>Quiz Completed!</h3>
                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '0.3rem' }}>
                       You scored {score} out of {quizQuestions.length} correct.
                     </p>
@@ -299,7 +301,7 @@ export default function LearningStudioSection() {
                   <p className="card-desc">Self-evaluation multiple choice questions generated strictly from {currentDoc?.original_filename || 'material'}.</p>
 
                   <div className="quiz-question-box" style={{ marginTop: '0.5rem' }}>
-                    <p className="quiz-question-text" style={{ fontSize: '1rem', fontWeight: 600, color: '#fff', marginBottom: '1.2rem', lineHeight: '1.4' }}>
+                    <p className="quiz-question-text" style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-arctic-1)', marginBottom: '1.2rem', lineHeight: '1.4' }}>
                       {quizQuestions[quizIndex].question}
                     </p>
                     
@@ -330,7 +332,7 @@ export default function LearningStudioSection() {
                     </div>
 
                     {quizSubmitted ? (
-                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem', lineHeight: '1.4', marginTop: '1.2rem' }}>
+                      <div style={{ background: 'var(--input-bg)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem', lineHeight: '1.4', marginTop: '1.2rem' }}>
                         <p style={{ fontWeight: '600', color: 'var(--color-arctic-3)', marginBottom: '0.3rem' }}>Explanation:</p>
                         <p style={{ color: 'var(--text-secondary)', margin: 0 }}>{quizQuestions[quizIndex].explanation}</p>
                         <button 
@@ -369,7 +371,7 @@ export default function LearningStudioSection() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
               {flashcards.length === 0 ? (
                 <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1', color: 'var(--text-muted)' }}>
-                  No study cards available. Generate study materials above to unlock summaries and roadmap sheets.
+                  No study materials available yet. Upload a document to automatically generate flashcards and quizzes.
                 </div>
               ) : (
                 <>

@@ -18,12 +18,12 @@ export default function SourceMetadata({ citation }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span>Vector ID:</span>
-        <span style={{ color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }} title={vectorId}>{vectorId}</span>
+        <span style={{ color: 'var(--color-arctic-1)', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }} title={vectorId}>{vectorId}</span>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span>Chunk Index:</span>
-        <span style={{ color: '#fff' }}>#{chunkIndex}</span>
+        <span style={{ color: 'var(--color-arctic-1)' }}>#{chunkIndex}</span>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>

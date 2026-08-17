@@ -37,7 +37,7 @@ export default function ChunkViewer({ chunkText = '' }) {
           padding: '0.9rem',
           background: 'rgba(255,255,255,0.025)',
           borderRadius: '0.5rem',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid var(--glass-border)',
           fontFamily: 'var(--font-mono)',
           fontSize: '0.8rem',
           lineHeight: '1.55',

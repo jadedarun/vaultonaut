@@ -51,7 +51,7 @@ export default function SourceCard({ citation }) {
             style={{ 
               fontWeight: 600, 
               fontSize: '0.82rem', 
-              color: '#fff', 
+              color: 'var(--color-arctic-1)', 
               overflow: 'hidden', 
               textOverflow: 'ellipsis', 
               whiteSpace: 'nowrap' 

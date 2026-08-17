@@ -3,12 +3,26 @@ import { motion } from 'framer-motion';
 import { 
   Search, 
   Plus, 
-  FileText 
+  FileText,
+  Star,
+  Bookmark
 } from 'lucide-react';
 import { useKnowledge } from '../../context/KnowledgeContext';
 import KnowledgeCard from '../knowledge/KnowledgeCard';
 import KnowledgeEditorModal from '../knowledge/KnowledgeEditorModal';
 import KnowledgeDeleteDialog from '../knowledge/KnowledgeDeleteDialog';
+
+function cleanTitle(title) {
+  if (!title) return '';
+  const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  if (title.startsWith('Flashcards -') && uuidRegex.test(title)) {
+    return 'Flashcards';
+  }
+  if (title.startsWith('Quiz -') && uuidRegex.test(title)) {
+    return 'Quiz';
+  }
+  return title;
+}
 
 export default function KnowledgeVaultSection() {
   const {
@@ -59,7 +73,6 @@ export default function KnowledgeVaultSection() {
       await updateItem(editingItem.id, payload);
     } else {
       await createItem(payload);
-      // Reset filter so created document is immediately visible
       setCategory('All');
       setFilterType('all');
     }
@@ -123,9 +136,11 @@ export default function KnowledgeVaultSection() {
               className="input-field"
               value={category}
               onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-              style={{ background: 'rgba(10, 14, 23, 0.8)', padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+              style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)', border: '1px solid var(--glass-border)', padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderRadius: '0.4rem' }}
             >
-              {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              {categories.map(cat => (
+                <option key={cat} value={cat} style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>{cat}</option>
+              ))}
             </select>
           </div>
 
@@ -141,12 +156,12 @@ export default function KnowledgeVaultSection() {
                 setOrder(o);
                 setPage(1);
               }}
-              style={{ background: 'rgba(10, 14, 23, 0.8)', padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+              style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)', border: '1px solid var(--glass-border)', padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderRadius: '0.4rem' }}
             >
-              <option value="created_at-desc">Newest First</option>
-              <option value="created_at-asc">Oldest First</option>
-              <option value="title-asc">Title (A-Z)</option>
-              <option value="updated_at-desc">Recently Updated</option>
+              <option value="created_at-desc" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>Newest First</option>
+              <option value="created_at-asc" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>Oldest First</option>
+              <option value="title-asc" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>Title (A-Z)</option>
+              <option value="updated_at-desc" style={{ background: 'var(--input-bg)', color: 'var(--color-arctic-1)' }}>Recently Updated</option>
             </select>
           </div>
         </div>
@@ -154,19 +169,23 @@ export default function KnowledgeVaultSection() {
         {/* Filter Tabs (All, Favorites, Pinned) */}
         <div style={{ display: 'flex', gap: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.8rem' }}>
           {[
-            { id: 'all', label: 'All Documents' },
-            { id: 'favorite', label: '⭐ Favorites' },
-            { id: 'pinned', label: '📌 Pinned' }
-          ].map(t => (
-            <button
-              key={t.id}
-              onClick={() => { setFilterType(t.id); setPage(1); }}
-              className={filterType === t.id ? 'btn-white-solid' : 'btn-white-outline'}
-              style={{ fontSize: '0.8rem', padding: '0.35rem 0.8rem', borderRadius: '2rem' }}
-            >
-              {t.label}
-            </button>
-          ))}
+            { id: 'all', label: 'All Documents', icon: null },
+            { id: 'favorite', label: 'Favorites', icon: Star },
+            { id: 'pinned', label: 'Pinned', icon: Bookmark }
+          ].map(t => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.id}
+                onClick={() => { setFilterType(t.id); setPage(1); }}
+                className={filterType === t.id ? 'btn-white-solid' : 'btn-white-outline'}
+                style={{ fontSize: '0.8rem', padding: '0.35rem 0.8rem', borderRadius: '2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              >
+                {Icon && <Icon size={12} />}
+                <span>{t.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -255,7 +274,7 @@ export default function KnowledgeVaultSection() {
         isOpen={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        itemTitle={deletingItem?.title || ''}
+        itemTitle={cleanTitle(deletingItem?.title || '')}
       />
     </motion.div>
   );

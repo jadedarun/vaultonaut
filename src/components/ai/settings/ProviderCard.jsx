@@ -13,7 +13,7 @@ export default function ProviderCard({ settings }) {
             <Cpu size={18} />
           </div>
           <div>
-            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#fff' }}>{provider}</h4>
+            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>{provider}</h4>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Active AI Generation Engine</span>
           </div>
         </div>
@@ -26,11 +26,11 @@ export default function ProviderCard({ settings }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem', padding: '0.8rem', background: 'rgba(0,0,0,0.15)', borderRadius: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
         <div>
           <div>Model Name</div>
-          <div style={{ color: '#fff', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{model}</div>
+          <div style={{ color: 'var(--color-arctic-1)', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{model}</div>
         </div>
         <div>
           <div>Context Window</div>
-          <div style={{ color: '#fff', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>1.0M Tokens</div>
+          <div style={{ color: 'var(--color-arctic-1)', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>1.0M Tokens</div>
         </div>
         <div>
           <div>Embedding Store</div>

@@ -10,7 +10,7 @@ export default function DocumentInfo({ citation }) {
       style={{
         padding: '0.9rem',
         borderRadius: '0.6rem',
-        background: 'rgba(255,255,255,0.02)',
+        background: 'var(--input-bg)',
         border: '1px solid rgba(255,255,255,0.06)',
         display: 'flex',
         flexDirection: 'column',
@@ -20,7 +20,7 @@ export default function DocumentInfo({ citation }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }}>
           <FileText size={18} color="var(--color-arctic-1)" />
-          <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={title}>
+          <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-arctic-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={title}>
             {title}
           </h4>
         </div>

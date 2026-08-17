@@ -32,7 +32,7 @@ export default function MessageToolbar({ textContent = '', onRegenerate }) {
         title="Copy complete response text"
       >
         {copied ? <Check size={13} /> : <Copy size={13} />}
-        <span>{copied ? 'Copied ✓' : 'Copy'}</span>
+        <span>{copied ? 'Copied' : 'Copy'}</span>
       </button>
 
       {/* Regenerate Placeholder */}

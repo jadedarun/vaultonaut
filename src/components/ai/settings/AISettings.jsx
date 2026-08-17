@@ -24,7 +24,7 @@ export default function AISettings() {
         margin: '0 auto',
         padding: '1.5rem',
         boxSizing: 'border-box',
-        color: '#fff',
+        color: 'var(--color-arctic-1)',
         display: 'flex',
         flexDirection: 'column',
         gap: '1.5rem'
@@ -41,7 +41,7 @@ export default function AISettings() {
             <ArrowLeft size={16} /> Back to AI Workspace
           </button>
 
-          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#fff' }}>
+          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-arctic-1)' }}>
             Vaultonaut AI Settings & Diagnostics
           </h2>
         </div>

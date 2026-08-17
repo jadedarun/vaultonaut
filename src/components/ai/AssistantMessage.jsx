@@ -93,7 +93,7 @@ export default function AssistantMessage({ message }) {
           border: '1px solid rgba(255, 255, 255, 0.08)',
           borderRadius: '0.2rem 1.1rem 1.1rem 1.1rem',
           padding: '1.1rem 1.3rem',
-          color: '#fff',
+          color: 'var(--color-arctic-1)',
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
@@ -102,7 +102,7 @@ export default function AssistantMessage({ message }) {
         }}
       >
         {/* Header Grounding Status & Developer Metadata */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: isGrounded ? '#34d399' : '#fbbf24', fontWeight: 600, fontSize: '0.78rem' }}>
             {isGrounded ? <CheckCircle size={13} /> : <AlertTriangle size={13} />}
             {isGrounded ? 'Grounded Answer' : 'Insufficient Context'}

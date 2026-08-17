@@ -101,7 +101,7 @@ export default function PromptInput() {
           background: !isOnline ? 'rgba(239,68,68,0.05)' : 'rgba(255, 255, 255, 0.03)',
           border: !isOnline ? '1px solid rgba(239,68,68,0.2)' : '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '0.6rem',
-          color: '#fff',
+          color: 'var(--color-arctic-1)',
           padding: '0.65rem 0.9rem',
           fontSize: '0.9rem',
           fontFamily: 'inherit',

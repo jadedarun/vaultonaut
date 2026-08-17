@@ -69,6 +69,36 @@
   --glass-border-hover: rgba(255, 255, 255, 0.2);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
   
+  /* Sidebar design tokens */
+  --sidebar-bg: #000000;
+  --sidebar-text: #a1a1aa;
+  --sidebar-active-bg: #ffffff;
+  --sidebar-active-text: #ffffff;
+  
+  /* Layout-level custom surfaces */
+  --surface-stat-bg: rgba(18, 18, 18, 0.8);
+  --surface-banner-bg: linear-gradient(135deg, rgba(24, 24, 27, 0.95) 0%, rgba(0, 0, 0, 0.98) 100%);
+  --surface-item-bg: rgba(10, 14, 23, 0.5);
+  --input-bg: rgba(10, 14, 23, 0.5);
+  
+  /* Premium button tokens - Solid */
+  --button-solid-bg: var(--color-arctic-1);
+  --button-solid-text: var(--bg-dark);
+  --button-solid-border: var(--color-arctic-1);
+  --button-solid-hover-bg: var(--color-arctic-2);
+  --button-solid-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+  --button-solid-hover-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+  
+  /* Premium button tokens - Outline */
+  --button-outline-bg: rgba(255, 255, 255, 0.05);
+  --button-outline-text: var(--color-arctic-1);
+  --button-outline-border: rgba(255, 255, 255, 0.25);
+  --button-outline-hover-bg: rgba(255, 255, 255, 0.15);
+
+  /* Chat elements */
+  --chat-user-bg: var(--color-arctic-1);
+  --chat-user-text: #000000;
+  
   /* Fonts - Geist default */
   --font-sans: 'Geist Sans', 'Inter', system-ui, -apple-system, sans-serif;
   --font-heading: 'Geist Sans', 'Outfit', var(--font-sans);
@@ -177,3 +207,65 @@ code {
 .fade-in {
   animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Light Theme Variables and Overrides */
+:root.light-theme {
+  --color-arctic-1: #111827; /* Dark slate 900 */
+  --color-arctic-2: #1f2937; /* Dark Slate 800 */
+  --color-arctic-3: #374151; /* Dark Slate 700 */
+  --color-arctic-4: #6b7280; /* Gray 500 */
+  --color-arctic-5: #e5e7eb; /* Gray 200 */
+  
+  --bg-dark: #f5f6f8; /* Soft light-neutral */
+  --bg-dark-accent: #e7e9ed; /* Slate-neutral */
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-card: #ffffff;
+  --glass-border: #d5d9e0;
+  --glass-border-hover: #cbd1d9;
+  --glass-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+  
+  /* Sidebar design tokens */
+  --sidebar-bg: #e7e9ed;
+  --sidebar-text: #6b7280;
+  --sidebar-active-bg: #111827;
+  --sidebar-active-text: #111827;
+  
+  /* Layout-level custom surfaces */
+  --surface-stat-bg: #ffffff;
+  --surface-banner-bg: linear-gradient(135deg, #ffffff 0%, #eef0f3 100%);
+  --surface-item-bg: #ffffff;
+  --input-bg: #ffffff;
+  
+  /* Premium button tokens - Solid */
+  --button-solid-bg: #111827;
+  --button-solid-text: #ffffff;
+  --button-solid-border: #111827;
+  --button-solid-hover-bg: #1f2937;
+  --button-solid-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --button-solid-hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  
+  /* Premium button tokens - Outline */
+  --button-outline-bg: #ffffff;
+  --button-outline-text: #111827;
+  --button-outline-border: #cbd1d9;
+  --button-outline-hover-bg: #f1f5f9;
+
+  /* Chat elements */
+  --chat-user-bg: #111827;
+  --chat-user-text: #ffffff;
+  
+  color-scheme: light;
+}
+
+:root.light-theme ::-webkit-scrollbar-track {
+  background: #f5f6f8;
+}
+
+:root.light-theme ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+

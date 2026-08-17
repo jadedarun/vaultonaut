@@ -1,8 +1,10 @@
 import { useAIWorkspace } from '../../context/AIWorkspaceContext';
-import { Sparkles, Plus, BookOpen, Search, FileText } from 'lucide-react';
+import { useDocuments } from '../../context/DocumentContext';
+import { Plus, BookOpen } from 'lucide-react';
 
 export default function EmptyState() {
-  const { createNewChat, sendPrompt } = useAIWorkspace();
+  const { createNewChat, sendPrompt, showToast } = useAIWorkspace();
+  const { documents } = useDocuments();
 
   const suggestedQuestions = [
     "What key concepts are covered in my uploaded documents?",
@@ -10,6 +12,14 @@ export default function EmptyState() {
     "How does document ingestion and chunking work?",
     "What are the main advantages of RAG systems?"
   ];
+
+  const handleStarterClick = (q) => {
+    if (!documents || documents.length === 0) {
+      showToast("Please upload a document to the Knowledge Vault first.", "warning");
+      return;
+    }
+    sendPrompt(q);
+  };
 
   return (
     <div 
@@ -19,41 +29,46 @@ export default function EmptyState() {
         flexDirection: 'column', 
         alignItems: 'center', 
         justify: 'center', 
-        padding: '3rem 1.5rem', 
+        padding: '2rem 1.5rem', 
         textAlign: 'center',
-        color: 'var(--text-muted)'
+        color: 'var(--text-muted)',
+        overflowY: 'auto',
+        maxHeight: '100%',
+        width: '100%',
+        boxSizing: 'border-box'
       }}
     >
       <div 
         style={{
-          width: '80px',
-          height: '80px',
+          width: '72px',
+          height: '72px',
           borderRadius: '50%',
           background: 'rgba(0, 212, 255, 0.08)',
           border: '1px solid rgba(0, 212, 255, 0.2)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: '1.2rem'
+          marginBottom: '1.2rem',
+          flexShrink: 0
         }}
       >
-        <Sparkles size={38} color="var(--color-arctic-1)" className="logo-icon" />
+        <BookOpen size={32} color="var(--color-arctic-1)" />
       </div>
 
-      <h3 style={{ fontSize: '1.35rem', fontWeight: 600, color: '#fff', margin: '0 0 0.4rem 0' }}>
+      <h3 style={{ fontSize: '1.3rem', fontWeight: 600, color: 'var(--color-arctic-1)', margin: '0 0 0.4rem 0' }}>
         Start your first AI conversation
       </h3>
 
-      <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', maxWidth: '460px', margin: '0 0 1.5rem 0', lineHeight: '1.5' }}>
-        Ask questions about your uploaded documents. Vaultonaut retrieves precise vector chunks and uses Google Gemini to generate grounded, source-backed answers.
+      <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', maxWidth: '460px', margin: '0 0 1.5rem 0', lineHeight: '1.5' }}>
+        Ask questions about your uploaded documents and get grounded answers with source references.
       </p>
 
-      <button className="btn-white-solid" onClick={createNewChat} style={{ padding: '0.65rem 1.4rem', fontWeight: 600, marginBottom: '2rem' }}>
+      <button className="btn-white-solid" onClick={createNewChat} style={{ padding: '0.65rem 1.4rem', fontWeight: 600, marginBottom: '2rem', flexShrink: 0 }}>
         <Plus size={16} /> New Conversation
       </button>
 
       {/* Suggested Prompt Pills */}
-      <div style={{ width: '100%', maxWidth: '600px' }}>
+      <div style={{ width: '100%', maxWidth: '600px', flexShrink: 0 }}>
         <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           Suggested Starters
         </p>
@@ -62,7 +77,7 @@ export default function EmptyState() {
             <button
               key={idx}
               className="btn-white-outline"
-              onClick={() => sendPrompt(q)}
+              onClick={() => handleStarterClick(q)}
               style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', borderRadius: '1rem' }}
             >
               {q}

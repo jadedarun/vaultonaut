@@ -1,4 +1,16 @@
-import { FileText, Star, Bookmark, Edit, Trash2, Clock, Eye } from 'lucide-react';
+import { Bookmark, Star, Edit, Trash2 } from 'lucide-react';
+
+function cleanTitle(title) {
+  if (!title) return '';
+  const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  if (title.startsWith('Flashcards -') && uuidRegex.test(title)) {
+    return 'Flashcards';
+  }
+  if (title.startsWith('Quiz -') && uuidRegex.test(title)) {
+    return 'Quiz';
+  }
+  return title;
+}
 
 export default function KnowledgeCard({ item, onEdit, onDelete, onToggleFav, onTogglePin }) {
   const formattedDate = new Date(item.created_at || Date.now()).toLocaleDateString('en-US', {
@@ -24,11 +36,12 @@ export default function KnowledgeCard({ item, onEdit, onDelete, onToggleFav, onT
     >
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.8rem', marginBottom: '0.6rem' }}>
-          <div style={{ display: 'flex', itemsCenter: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <span className="badge-tag">{item.category}</span>
-            <span className="badge-tag" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>✨ AI Ready</span>
             {item.pinned && (
-              <span className="badge-tag" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}>📌 Pinned</span>
+              <span className="badge-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', background: 'rgba(255, 255, 255, 0.15)', color: 'var(--color-arctic-1)' }}>
+                <Bookmark size={10} /> Pinned
+              </span>
             )}
           </div>
 
@@ -53,7 +66,7 @@ export default function KnowledgeCard({ item, onEdit, onDelete, onToggleFav, onT
         </div>
 
         <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)', marginBottom: '0.4rem', lineHeight: '1.3' }}>
-          {item.title}
+          {cleanTitle(item.title)}
         </h3>
 
         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>

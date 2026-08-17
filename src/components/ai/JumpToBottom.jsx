@@ -13,7 +13,7 @@ export default function JumpToBottom({ visible, onClick }) {
         zIndex: 50,
         background: 'rgba(0, 212, 255, 0.2)',
         border: '1px solid rgba(0, 212, 255, 0.4)',
-        color: '#fff',
+        color: 'var(--color-arctic-1)',
         borderRadius: '2rem',
         padding: '0.4rem 0.9rem',
         fontSize: '0.78rem',

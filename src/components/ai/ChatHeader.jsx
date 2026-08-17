@@ -12,7 +12,7 @@ export default function ChatHeader() {
         <button 
           className="btn-icon-only mobile-only" 
           onClick={() => setSidebarOpen(prev => !prev)}
-          style={{ display: 'none', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.1)' }}
+          style={{ display: 'none', padding: '0.4rem', border: '1px solid var(--glass-border)' }}
           title="Toggle conversation list"
         >
           <Menu size={18} />

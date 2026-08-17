@@ -22,7 +22,7 @@ export default function SourceActions({ textToCopy = '' }) {
         style={{ flex: 1, fontSize: '0.78rem', padding: '0.45rem 0.8rem', justifyContent: 'center' }}
       >
         {copied ? <Check size={13} /> : <Copy size={13} />}
-        <span>{copied ? 'Copied ✓' : 'Copy Chunk Text'}</span>
+        <span>{copied ? 'Copied' : 'Copy Chunk Text'}</span>
       </button>
 
       <button
