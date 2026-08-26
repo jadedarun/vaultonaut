@@ -384,16 +384,11 @@ export default function App() {
       <aside className="sidebar-container">
         <div>
           <div className="logo-section">
-            <HardDrive size={28} className="logo-icon" style={{ color: 'var(--color-arctic-1)' }} />
-            <span className="logo-text">
-              <GradientText
-                colors={theme === 'light' ? ['#111827', '#374151', '#4b5563', '#111827'] : ['#ffffff', '#e4e4e7', '#a1a1aa', '#ffffff']}
-                animationSpeed={5}
-                showBorder={false}
-              >
-                Vaultonaut
-              </GradientText>
-            </span>
+            <img 
+              src="/assets/vaultonaut-logo.png" 
+              alt="Vaultonaut" 
+              style={{ height: '36px', width: 'auto', objectFit: 'contain' }} 
+            />
           </div>
           
           <div className="sidebar-nav">
