@@ -33,34 +33,7 @@ Frontend
 - AI Integration: Google GenAI SDK, SentenceTransformers (all-MiniLM-L6-v2)
 - DevOps: Docker, Docker Compose, Pytest
 
-## Local Development
 
-Follow these steps to run the application locally using Docker Compose:
-
-1. Clone the repository and navigate to the project root.
-2. Create a `.env` file in the root directory based on `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
-3. Set your `GEMINI_API_KEY` and other configurations inside `.env`.
-4. Build and start the services:
-   ```bash
-   docker-compose up --build
-   ```
-5. The services will be accessible at:
-   - Frontend SPA: http://localhost:5173
-   - Backend API: http://localhost:8000
-   - Interactive API Docs (Swagger): http://localhost:8000/docs
-
-
-## Environment Variables
-
-The application relies on environment variables for configuration. Copy the template from `.env.example` to `.env` and fill in the values:
-
-- `GEMINI_API_KEY`: API Key for Google Gemini services.
-- `VITE_GOOGLE_CLIENT_ID`: Google OAuth Client ID for user login.
-- `DATABASE_URL`: PostgreSQL connection URI.
-- `JWT_SECRET`: Secret key for signing JWT tokens.
 
 ## Project Structure
 
