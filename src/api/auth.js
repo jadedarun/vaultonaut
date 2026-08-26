@@ -49,4 +49,14 @@ export const authApi = {
       return { success: true, message: 'Logged out locally' };
     }
   },
+
+  /**
+   * Request elevated developer authorization
+   */
+  authorizeDeveloper: async (password) => {
+    const response = await apiClient.post('/auth/developer/authorize', {
+      password
+    });
+    return response.data;
+  },
 };

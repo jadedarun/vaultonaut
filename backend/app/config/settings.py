@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str = "super-secret-key-change-this-in-production-vaultonaut-2026"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days
+    DEVELOPER_PASSWORD: str = "vaultonaut-dev-pass-2026"
 
     # Google OAuth
     GOOGLE_CLIENT_ID: str = "1049489293832-ool2v684u0df5a34cc1jnjeg3t2mv35u.apps.googleusercontent.com"

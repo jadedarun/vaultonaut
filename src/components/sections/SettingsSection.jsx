@@ -11,6 +11,7 @@ import DeveloperPanel from '../ai/settings/DeveloperPanel';
 import PreferenceSection from '../ai/settings/PreferenceSection';
 import UsageDashboard from '../ai/settings/UsageDashboard';
 import KeyboardShortcutCard from '../ai/settings/KeyboardShortcutCard';
+import { authApi } from '../../api/auth';
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -23,13 +24,80 @@ import {
   Palette,
   Terminal,
   Activity,
-  Layers
+  Layers,
+  Lock
 } from 'lucide-react';
+
+function DeveloperPasswordPrompt({ onAuthorize }) {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!password) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await authApi.authorizeDeveloper(password);
+      if (res.authorized && res.dev_token) {
+        sessionStorage.setItem('vaultonaut_dev_token', res.dev_token);
+        onAuthorize();
+      } else {
+        setError('Invalid credentials');
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Verification failed. Invalid password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.2rem', maxWidth: '440px', margin: '2rem auto', textAlign: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
+        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Lock size={22} color="var(--color-arctic-1)" />
+        </div>
+      </div>
+      <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--color-arctic-1)', margin: 0 }}>Elevated Developer Access</h3>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+        Developer diagnostics and infrastructure settings are restricted. Please enter the developer access credential to continue.
+      </p>
+      
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
+        <input
+          type="password"
+          placeholder="Enter developer password..."
+          className="input-field"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ width: '100%', padding: '0.65rem 0.9rem', fontSize: '0.9rem' }}
+          disabled={loading}
+          autoFocus
+        />
+        {error && <div style={{ fontSize: '0.8rem', color: '#f87171', fontWeight: 500 }}>{error}</div>}
+        <button type="submit" className="btn-white-solid" disabled={loading} style={{ justifyContent: 'center', width: '100%' }}>
+          {loading ? 'Authorizing...' : 'Unlock Diagnostics'}
+        </button>
+      </form>
+    </div>
+  );
+}
 
 export default function SettingsSection({ user, logout }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { settings, usage, health, loading, developerMode, toggleDeveloperMode } = useAISettings();
+  const { settings, usage, health, loading, developerMode, toggleDeveloperMode, reloadSettings } = useAISettings();
+  const [isDeveloperAuthorized, setIsDeveloperAuthorized] = useState(() => {
+    return !!sessionStorage.getItem('vaultonaut_dev_token');
+  });
+
+  const handleToggleDevMode = () => {
+    toggleDeveloperMode();
+    sessionStorage.removeItem('vaultonaut_dev_token');
+    setIsDeveloperAuthorized(false);
+  };
 
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('vaultonaut_theme') || 'dark';
@@ -53,8 +121,7 @@ export default function SettingsSection({ user, logout }) {
     setVersionClicks(prev => {
       const next = prev + 1;
       if (next >= 5) {
-        toggleDeveloperMode();
-        window.alert("Developer Mode toggled.");
+        handleToggleDevMode();
         return 0;
       }
       return next;
@@ -298,28 +365,22 @@ export default function SettingsSection({ user, logout }) {
           {/* SECTION 5: Developer Diagnostics */}
           {activeTab === 'developer' && (
             <>
-              <DeveloperPanel developerMode={developerMode} onToggle={toggleDeveloperMode} />
+              <DeveloperPanel developerMode={developerMode} onToggle={handleToggleDevMode} />
               
-              {developerMode && (
+              {developerMode && !isDeveloperAuthorized && (
+                <DeveloperPasswordPrompt onAuthorize={() => {
+                  setIsDeveloperAuthorized(true);
+                  reloadSettings();
+                }} />
+              )}
+
+              {developerMode && isDeveloperAuthorized && (
                 <>
                   <ProviderCard settings={settings} />
                   <RetrievalSettings settings={settings} />
                   <ModelSettings settings={settings} />
                   <UsageDashboard usage={usage} />
                   <HealthStatus health={health} />
-                  
-                  <div className="glass-card" style={{ padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Terminal size={18} color="var(--color-arctic-1)" />
-                      <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>Vector Console Logger Telemetry</h4>
-                    </div>
-                    <div style={{ padding: '0.8rem', background: '#09090b', borderRadius: '0.5rem', border: '1px solid var(--glass-border)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.4rem', height: '120px', overflowY: 'auto' }}>
-                      <div>[LOGS 20:06:51] ChromaDB client initialized from workspace persistent store.</div>
-                      <div>[LOGS 20:06:52] Local vector store collections mapped: 1. (vaultonaut_documents)</div>
-                      <div>[LOGS 20:07:01] PostgreSQL database connected. 5 schemas, 11 models registered.</div>
-                      <div style={{ color: '#34d399' }}>[SYSTEM] Diagnostic telemetry initialized: all systems operational.</div>
-                    </div>
-                  </div>
                 </>
               )}
 

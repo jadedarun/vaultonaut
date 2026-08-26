@@ -2,7 +2,8 @@ import { Cpu, Clock, Layers } from 'lucide-react';
 
 export default function MessageMetadata({ metadata = {} }) {
   const isDevMode = localStorage.getItem('vaultonaut_dev_mode') === 'true';
-  if (!isDevMode) return null;
+  const hasDevToken = !!sessionStorage.getItem('vaultonaut_dev_token');
+  if (!isDevMode || !hasDevToken) return null;
 
   const model = metadata.model_name || 'gemini-3.5-flash';
   const latency = metadata.total_latency_ms;

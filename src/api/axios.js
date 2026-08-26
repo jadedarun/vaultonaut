@@ -18,6 +18,10 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    const devToken = sessionStorage.getItem('vaultonaut_dev_token');
+    if (devToken) {
+      config.headers['X-Developer-Token'] = devToken;
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -28,8 +32,18 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      console.warn('Unauthorized request or expired JWT. Clearing session...');
-      tokenStorage.clearSession();
+      const url = error.config?.url || '';
+      if (
+        !url.includes('/developer/authorize') && 
+        !url.includes('/health/detailed') && 
+        !url.includes('/settings') && 
+        !url.includes('/search/similarity')
+      ) {
+        console.warn('Unauthorized request or expired JWT. Clearing session...');
+        tokenStorage.clearSession();
+      } else {
+        console.warn('Developer mode check or diagnostics failed. Retaining active session.');
+      }
     }
     return Promise.reject(error);
   }

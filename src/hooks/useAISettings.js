@@ -21,21 +21,38 @@ export function useAISettings() {
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, u, h] = await Promise.all([
-        chatApi.getAISettings(),
-        chatApi.getUsage(),
-        chatApi.getHealth().catch(() => ({
-          status: 'healthy',
-          version: '1.0.0',
-          diagnostics: {
-            postgresql: 'healthy',
-            chromadb: 'healthy',
-            gemini_api: 'configured',
-            memory_usage_percent: 45,
-            disk_usage_percent: 62
-          }
-        }))
-      ]);
+      const isAuthorized = !!sessionStorage.getItem('vaultonaut_dev_token');
+      
+      const s = isAuthorized 
+        ? await chatApi.getAISettings()
+        : {
+            provider: 'Google Gemini',
+            model: 'gemini-3.5-flash',
+            embedding_model: 'all-MiniLM-L6-v2',
+            top_k: parseInt(localStorage.getItem('vaultonaut_top_k')) || 5,
+            similarity_threshold: parseFloat(localStorage.getItem('vaultonaut_similarity_threshold')) || 0.45,
+            temperature: parseFloat(localStorage.getItem('vaultonaut_temperature')) || 0.2,
+            max_tokens: parseInt(localStorage.getItem('vaultonaut_max_tokens')) || 2048,
+            context_window: 1048576,
+            status: 'Connected'
+          };
+
+      const u = await chatApi.getUsage();
+
+      const h = isAuthorized
+        ? await chatApi.getHealth().catch(() => ({
+            status: 'healthy',
+            version: '1.0.0',
+            diagnostics: {
+              postgresql: 'healthy',
+              chromadb: 'healthy',
+              gemini_api: 'configured',
+              memory_usage_percent: 45,
+              disk_usage_percent: 62
+            }
+          }))
+        : null;
+
       setSettings(s);
       setUsage(u);
       setHealth(h);

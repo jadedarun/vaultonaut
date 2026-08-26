@@ -108,7 +108,11 @@ def test_ai_ingestion_pipeline_end_to_end(client, auth_headers, db_session, test
     assert db_embeddings[0].embedding_dimension == 384
 
 
-def test_similarity_search_endpoint(client, auth_headers):
+def test_similarity_search_endpoint(client, auth_headers, test_user):
+    from app.core.security import create_developer_token
+    dev_token = create_developer_token(user_id=test_user.id)
+    dev_headers = {**auth_headers, "X-Developer-Token": dev_token}
+
     # Upload document first
     content = b"PyMuPDF extracts text from PDF documents. Python-docx parses Word documents."
     upload_res = client.post("/api/documents/upload", files={"file": ("parsing.txt", io.BytesIO(content), "text/plain")}, headers=auth_headers)
@@ -119,7 +123,7 @@ def test_similarity_search_endpoint(client, auth_headers):
         "query": "How are PDF files parsed?",
         "top_k": 3
     }
-    response = client.post("/api/search/similarity", json=search_payload, headers=auth_headers)
+    response = client.post("/api/search/similarity", json=search_payload, headers=dev_headers)
     assert response.status_code == 200
     data = response.json()
     assert data["total_retrieved"] >= 1

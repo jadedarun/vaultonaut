@@ -12,7 +12,7 @@ import { X, Database, Eye, Network } from 'lucide-react';
 
 export default function SourcePanel() {
   const { selectedCitation, setSelectedCitation } = useAIWorkspace();
-  const isDevMode = localStorage.getItem('vaultonaut_dev_mode') === 'true';
+  const isDevMode = localStorage.getItem('vaultonaut_dev_mode') === 'true' && !!sessionStorage.getItem('vaultonaut_dev_token');
 
   // Close panel on Escape key
   useEffect(() => {

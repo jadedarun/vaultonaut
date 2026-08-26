@@ -6,6 +6,7 @@ from sqlalchemy import text
 from app.database.session import get_db
 from app.config.settings import settings
 from app.services.vector_store import vector_store_service
+from app.core.security import get_current_developer_user
 
 router = APIRouter(tags=["Health"])
 
@@ -14,7 +15,10 @@ def health_check():
     return {"status": "healthy"}
 
 @router.get("/health/detailed")
-def detailed_health_check(db: Session = Depends(get_db)):
+def detailed_health_check(
+    db: Session = Depends(get_db),
+    dev_user = Depends(get_current_developer_user)
+):
     # 1. Database Check
     db_status = "healthy"
     try:
@@ -55,7 +59,9 @@ def detailed_health_check(db: Session = Depends(get_db)):
 
 
 @router.get("/api/settings")
-def get_backend_settings():
+def get_backend_settings(
+    dev_user = Depends(get_current_developer_user)
+):
     """Exposes backend authoritative configuration defaults (loaded from .env)."""
     return {
         "gemini_model": settings.GEMINI_MODEL,

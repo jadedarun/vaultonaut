@@ -1,5 +1,5 @@
 import { useAIWorkspace } from '../../context/AIWorkspaceContext';
-import { Plus, RefreshCw, Settings, Menu, Sparkles } from 'lucide-react';
+import { Plus, RefreshCw, Settings, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ChatHeader() {
@@ -20,7 +20,7 @@ export default function ChatHeader() {
 
         <div>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--color-arctic-1)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Sparkles size={20} className="logo-icon" /> AI Workspace
+            AI Workspace
             {activeConversation && (
               <span style={{ fontSize: '0.82rem', fontWeight: 400, color: 'var(--text-muted)' }}>
                 &bull; {activeConversation.title}

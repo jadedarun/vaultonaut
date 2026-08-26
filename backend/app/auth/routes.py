@@ -75,3 +75,31 @@ async def demo_login(db: Session = Depends(get_db)):
         token_type="bearer",
         user=user
     )
+
+
+from pydantic import BaseModel
+from app.core.security import get_current_user, create_developer_token
+from app.models.user import User
+from app.config.settings import settings
+
+
+class DeveloperAuthorizeRequest(BaseModel):
+    password: str
+
+
+@router.post("/developer/authorize", summary="Authorize Elevated Developer Session")
+async def authorize_developer(
+    payload: DeveloperAuthorizeRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Validates developer password and returns a safe developer session JWT.
+    """
+    if payload.password != settings.DEVELOPER_PASSWORD:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid developer password credentials"
+        )
+    
+    dev_token = create_developer_token(user_id=current_user.id)
+    return {"authorized": True, "dev_token": dev_token}

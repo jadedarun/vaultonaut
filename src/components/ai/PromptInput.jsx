@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAIWorkspace } from '../../context/AIWorkspaceContext';
-import { Send, Square, Paperclip, Mic, WifiOff } from 'lucide-react';
+import { Send, Square, WifiOff } from 'lucide-react';
 
 export default function PromptInput() {
   const { sendPrompt, sending, isOnline, activeConversationId, getDraft, saveDraft, stopStreaming } = useAIWorkspace();
@@ -74,14 +74,7 @@ export default function PromptInput() {
         background: 'rgba(255,255,255,0.015)'
       }}
     >
-      {/* Attachment Button Placeholder */}
-      <button 
-        type="button" 
-        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.4rem', opacity: 0.6 }}
-        title="Upload attachment (Placeholder)"
-      >
-        <Paperclip size={18} />
-      </button>
+
 
       {/* Auto-growing Textarea */}
       <textarea
@@ -110,14 +103,7 @@ export default function PromptInput() {
         }}
       />
 
-      {/* Voice Button Placeholder */}
-      <button 
-        type="button" 
-        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.4rem', opacity: 0.6 }}
-        title="Voice prompt (Placeholder)"
-      >
-        <Mic size={18} />
-      </button>
+
 
       {/* Send or Stop Generation Button */}
       {sending ? (

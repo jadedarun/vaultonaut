@@ -214,6 +214,8 @@ export function AuthProvider({ children }) {
       console.warn('Backend logout call notice:', e);
     } finally {
       tokenStorage.clearSession();
+      sessionStorage.removeItem('vaultonaut_dev_token');
+      localStorage.removeItem('vaultonaut_dev_mode');
       setUser(null);
       setToken(null);
       setAuthStatus('idle');

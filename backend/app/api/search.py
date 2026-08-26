@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database.session import get_db
 from app.models.user import User
-from app.core.security import get_current_user
+from app.core.security import get_current_user, get_current_developer_user
 from app.schemas.search import (
     SimilaritySearchRequest,
     SimilaritySearchResponse,
@@ -21,6 +21,7 @@ router = APIRouter(prefix="/api/search", tags=["Vector Similarity Search"])
 def execute_similarity_search(
     request: SimilaritySearchRequest,
     current_user: User = Depends(get_current_user),
+    dev_user: User = Depends(get_current_developer_user),
     db: Session = Depends(get_db)
 ):
     """

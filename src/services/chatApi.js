@@ -5,7 +5,15 @@ const API_BASE_URL = 'http://localhost:8000/api';
 
 const getAuthHeaders = () => {
   const token = tokenStorage.getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  const headers = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  const devToken = sessionStorage.getItem('vaultonaut_dev_token');
+  if (devToken) {
+    headers['X-Developer-Token'] = devToken;
+  }
+  return headers;
 };
 
 export async function sendMessage(chatPayload, options = {}) {
@@ -127,6 +135,8 @@ export async function getUsage() {
 }
 
 export async function getHealth() {
-  const response = await axios.get('http://localhost:8000/health/detailed');
+  const response = await axios.get('http://localhost:8000/health/detailed', {
+    headers: getAuthHeaders()
+  });
   return response.data;
 }

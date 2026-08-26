@@ -419,18 +419,11 @@ export default function App() {
         <div className="sidebar-footer">
           <div className="system-status">
             <span className="status-dot"></span>
-            <span>{localStorage.getItem('vaultonaut_dev_mode') === 'true' ? 'RAG Engine Online' : 'Connected'}</span>
+            <span>Connected</span>
           </div>
-          {localStorage.getItem('vaultonaut_dev_mode') === 'true' ? (
-            <div className="db-stats">
-              <p>Chroma vectors: {stats.vectors_stored || 0}</p>
-              <p>Collections: {collections.length}</p>
-            </div>
-          ) : (
-            <div className="db-stats">
-              <p>Ready to answer from your knowledge</p>
-            </div>
-          )}
+          <div className="db-stats">
+            <p>Ready to answer from your knowledge</p>
+          </div>
         </div>
       </aside>
 
@@ -442,22 +435,9 @@ export default function App() {
           <div className="nav-actions">
             {/* The white buttons requested by the user */}
             <button 
-              className={theme === 'light' ? 'btn-white-solid' : 'btn-white-outline'} 
+              className={`btn-turbo-mode${turboMode ? ' active' : ''}`}
               onClick={() => setTurboMode(!turboMode)} 
               title="Toggle Turbo Mode (Disables GPU WebGL shaders for max FPS)"
-              style={
-                theme === 'light'
-                  ? { 
-                      background: turboMode ? '#10b981' : '#111827', 
-                      borderColor: turboMode ? '#10b981' : '#111827', 
-                      color: '#ffffff',
-                      boxShadow: 'none'
-                    }
-                  : { 
-                      borderColor: turboMode ? '#10b981' : 'var(--glass-border)', 
-                      color: turboMode ? '#10b981' : 'var(--color-arctic-1)' 
-                    }
-              }
             >
               <Zap size={16} />
               <span>{turboMode ? 'Turbo On (120 FPS)' : 'Turbo Mode'}</span>
@@ -480,15 +460,6 @@ export default function App() {
               <LogOut size={16} />
               <span>Logout</span>
             </button>
-            <a 
-              href="https://github.com" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="btn-icon-only" 
-              title="GitHub Repository"
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
-            </a>
           </div>
         </header>
 

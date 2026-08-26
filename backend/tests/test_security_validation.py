@@ -28,8 +28,30 @@ def auth_headers(test_user):
     token = create_access_token(user_id=test_user.id, email=test_user.email)
     return {"Authorization": f"Bearer {token}"}
 
-def test_detailed_health_endpoint():
-    response = client.get("/health/detailed")
+def test_detailed_health_endpoint(db_session):
+    from app.models.user import User
+    from app.core.security import create_access_token, create_developer_token
+    
+    user = User(
+        id=uuid.uuid4(),
+        google_id="google_sec_diag_999",
+        email="sec_diag_test@example.com",
+        full_name="Security Diagnostics User",
+        email_verified=True,
+        is_active=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+
+    token = create_access_token(user_id=user.id, email=user.email)
+    dev_token = create_developer_token(user_id=user.id)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "X-Developer-Token": dev_token
+    }
+
+    response = client.get("/health/detailed", headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert "status" in data

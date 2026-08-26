@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
@@ -98,3 +98,55 @@ def get_current_user(
         )
 
     return user
+
+
+def create_developer_token(user_id: uuid.UUID, expires_delta: Optional[timedelta] = None) -> str:
+    """Generates a signed JWT developer session token with elevated claims."""
+    now = datetime.now(timezone.utc)
+    if expires_delta:
+        expire = now + expires_delta
+    else:
+        expire = now + timedelta(hours=2)
+
+    to_encode = {
+        "sub": str(user_id),
+        "user_id": str(user_id),
+        "is_developer": True,
+        "exp": expire,
+        "iat": now
+    }
+
+    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    return encoded_jwt
+
+
+def get_current_developer_user(
+    x_developer_token: Optional[str] = Header(None),
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """FastAPI Dependency injection to retrieve authorized developer from header."""
+    if not x_developer_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Developer mode elevated authorization required"
+        )
+
+    try:
+        payload = jwt.decode(x_developer_token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+    except JWTError as e:
+        logger.warning(f"Developer JWT Decoding failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate developer session or token expired"
+        )
+
+    user_id_str: Optional[str] = payload.get("sub")
+    is_developer: bool = payload.get("is_developer", False)
+
+    if not user_id_str or str(current_user.id) != user_id_str or not is_developer:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: unauthorized developer session"
+        )
+
+    return current_user

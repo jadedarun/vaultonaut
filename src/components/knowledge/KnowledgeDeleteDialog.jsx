@@ -14,7 +14,7 @@ export default function KnowledgeDeleteDialog({ isOpen, onClose, onConfirm, item
           <X size={18} />
         </button>
 
-        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', display: 'flex', alignItems: 'center', justifyCenter: 'center', margin: '0 auto 1rem auto' }}>
+        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto' }}>
           <AlertTriangle size={24} color="#ef4444" />
         </div>
 
