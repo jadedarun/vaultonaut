@@ -13,11 +13,17 @@ from app.services.vector_store import vector_store_service
 from app.core.logging import logger
 
 
-def process_ai_indexing(db: Session, document: Document, text_content: str) -> List[DocumentChunk]:
+def process_ai_indexing(
+    db: Session,
+    document: Document,
+    text_content: str,
+    pages: Optional[List[Dict[str, Any]]] = None,
+    strategy: str = "fixed_overlap"
+) -> List[DocumentChunk]:
     """
     Executes AI Foundation Pipeline:
-    1. Preprocess & clean extracted text.
-    2. Chunk clean text into 800-char overlapping segments.
+    1. Preprocess & clean extracted text (or use page-aware document blocks).
+    2. Chunk clean text according to selected strategy (fixed_no_overlap, fixed_overlap, semantic_paragraph).
     3. Generate 384-dim dense vector embeddings using SentenceTransformers (all-MiniLM-L6-v2).
     4. Store vectors & rich metadata into ChromaDB collection.
     5. Persist DocumentChunk and Embedding records in PostgreSQL.
@@ -28,8 +34,11 @@ def process_ai_indexing(db: Session, document: Document, text_content: str) -> L
     document.processing_stage = "chunking"
     db.commit()
 
-    cleaned_text = preprocess_text(text_content)
-    raw_chunks = default_chunking_service.chunk_text(cleaned_text)
+    if pages:
+        raw_chunks = default_chunking_service.chunk_document_pages(pages, strategy=strategy)
+    else:
+        cleaned_text = preprocess_text(text_content)
+        raw_chunks = default_chunking_service.chunk_text(cleaned_text, strategy=strategy)
 
     if not raw_chunks:
         # Document was empty or whitespace only
@@ -67,7 +76,10 @@ def process_ai_indexing(db: Session, document: Document, text_content: str) -> L
             metadata_json={
                 "original_filename": document.original_filename,
                 "file_extension": document.file_extension,
-                "chunk_index": c_data["chunk_index"]
+                "chunk_index": c_data["chunk_index"],
+                "page_number": c_data.get("page_number", 1),
+                "section_title": c_data.get("section_title", ""),
+                "strategy": c_data.get("strategy", strategy)
             }
         )
         db.add(db_chunk)

@@ -28,7 +28,7 @@ def auth_headers(test_user):
     token = create_access_token(user_id=test_user.id, email=test_user.email)
     return {"Authorization": f"Bearer {token}"}
 
-def test_detailed_health_endpoint(db_session):
+def test_detailed_health_endpoint(client, db_session):
     from app.models.user import User
     from app.core.security import create_access_token, create_developer_token
     

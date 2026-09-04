@@ -27,7 +27,8 @@ class ExtractedDocument:
         word_count: int,
         reading_time: int,
         language: str,
-        metadata: Dict[str, Any]
+        metadata: Dict[str, Any],
+        pages: Optional[List[Dict[str, Any]]] = None
     ):
         self.text = text
         self.title = title
@@ -36,6 +37,7 @@ class ExtractedDocument:
         self.reading_time = reading_time
         self.language = language
         self.metadata = metadata
+        self.pages = pages if pages else [{"page_number": 1, "text": text}]
 
 
 def detect_language(text: str) -> str:
@@ -57,11 +59,12 @@ def compute_reading_time(word_count: int) -> int:
 
 
 def extract_pdf(file_path: str, default_title: str) -> ExtractedDocument:
-    """Extracts text, metadata, page count from PDF using PyMuPDF (fitz)."""
+    """Extracts text, metadata, page count, and page-by-page chunks from PDF using PyMuPDF (fitz)."""
     if fitz is None:
         raise RuntimeError("PyMuPDF (fitz) library is not installed.")
     
     text_chunks = []
+    pages_data = []
     page_count = 0
     doc_title = default_title
     
@@ -73,10 +76,15 @@ def extract_pdf(file_path: str, default_title: str) -> ExtractedDocument:
     if pdf_meta.get("title") and str(pdf_meta["title"]).strip():
         doc_title = str(pdf_meta["title"]).strip()
         
-    for page in doc:
+    for page_num, page in enumerate(doc, 1):
         page_text = page.get_text()
-        if page_text:
-            text_chunks.append(page_text)
+        if page_text and page_text.strip():
+            clean_page_text = page_text.strip()
+            text_chunks.append(clean_page_text)
+            pages_data.append({
+                "page_number": page_num,
+                "text": clean_page_text
+            })
             
     doc.close()
     
@@ -86,6 +94,9 @@ def extract_pdf(file_path: str, default_title: str) -> ExtractedDocument:
     reading_time = compute_reading_time(word_count)
     language = detect_language(full_text)
     
+    if not pages_data and full_text:
+        pages_data = [{"page_number": 1, "text": full_text}]
+        
     return ExtractedDocument(
         text=full_text,
         title=doc_title,
@@ -93,17 +104,19 @@ def extract_pdf(file_path: str, default_title: str) -> ExtractedDocument:
         word_count=word_count,
         reading_time=reading_time,
         language=language,
-        metadata={"format": "PDF", "pdf_metadata": pdf_meta}
+        metadata={"format": "PDF", "pdf_metadata": pdf_meta},
+        pages=pages_data
     )
 
 
 def extract_docx(file_path: str, default_title: str) -> ExtractedDocument:
-    """Extracts text and metadata from DOCX using python-docx."""
+    """Extracts text, metadata, and estimated page groupings from DOCX using python-docx."""
     if docx is None:
         raise RuntimeError("python-docx library is not installed.")
     
     doc = docx.Document(file_path)
-    full_text = "\n\n".join([p.text for p in doc.paragraphs if p.text.strip()]).strip()
+    paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+    full_text = "\n\n".join(paragraphs).strip()
     
     words = full_text.split()
     word_count = len(words)
@@ -111,6 +124,24 @@ def extract_docx(file_path: str, default_title: str) -> ExtractedDocument:
     reading_time = compute_reading_time(word_count)
     language = detect_language(full_text)
     
+    pages_data = []
+    curr_page = 1
+    curr_paras = []
+    curr_words = 0
+    for p in paragraphs:
+        curr_paras.append(p)
+        curr_words += len(p.split())
+        if curr_words >= 350:
+            pages_data.append({"page_number": curr_page, "text": "\n\n".join(curr_paras)})
+            curr_page += 1
+            curr_paras = []
+            curr_words = 0
+    if curr_paras:
+        pages_data.append({"page_number": curr_page, "text": "\n\n".join(curr_paras)})
+    
+    if not pages_data and full_text:
+        pages_data = [{"page_number": 1, "text": full_text}]
+        
     return ExtractedDocument(
         text=full_text,
         title=default_title,
@@ -118,12 +149,13 @@ def extract_docx(file_path: str, default_title: str) -> ExtractedDocument:
         word_count=word_count,
         reading_time=reading_time,
         language=language,
-        metadata={"format": "DOCX", "paragraph_count": len(doc.paragraphs)}
+        metadata={"format": "DOCX", "paragraph_count": len(doc.paragraphs)},
+        pages=pages_data
     )
 
 
 def extract_text_plain(file_path: str, default_title: str, is_markdown: bool = False) -> ExtractedDocument:
-    """Reads plain text or markdown file content with encoding fallbacks."""
+    """Reads plain text or markdown file content with encoding fallbacks and section detection."""
     full_text = ""
     try:
         with open(file_path, "r", encoding="utf-8") as f:
@@ -148,6 +180,26 @@ def extract_text_plain(file_path: str, default_title: str, is_markdown: bool = F
                 extracted_title = line_str[2:].strip()
                 break
                 
+    # Group text into virtual pages (~400 words per page)
+    pages_data = []
+    paragraphs = [p.strip() for p in full_text.split("\n\n") if p.strip()]
+    curr_page = 1
+    curr_paras = []
+    curr_words = 0
+    for p in paragraphs:
+        curr_paras.append(p)
+        curr_words += len(p.split())
+        if curr_words >= 400:
+            pages_data.append({"page_number": curr_page, "text": "\n\n".join(curr_paras)})
+            curr_page += 1
+            curr_paras = []
+            curr_words = 0
+    if curr_paras:
+        pages_data.append({"page_number": curr_page, "text": "\n\n".join(curr_paras)})
+        
+    if not pages_data and full_text:
+        pages_data = [{"page_number": 1, "text": full_text}]
+        
     return ExtractedDocument(
         text=full_text,
         title=extracted_title,
@@ -155,7 +207,8 @@ def extract_text_plain(file_path: str, default_title: str, is_markdown: bool = F
         word_count=word_count,
         reading_time=reading_time,
         language=language,
-        metadata={"format": "Markdown" if is_markdown else "TXT"}
+        metadata={"format": "Markdown" if is_markdown else "TXT"},
+        pages=pages_data
     )
 
 

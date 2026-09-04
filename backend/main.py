@@ -21,6 +21,8 @@ from app.api.knowledge import router as knowledge_router
 from app.api.documents import router as documents_router
 from app.api.search import router as search_router
 from app.api.chat import router as chat_router
+from app.api.evaluation import router as evaluation_router
+
 
 
 @asynccontextmanager
@@ -29,6 +31,12 @@ async def lifespan(app: FastAPI):
     setup_logging()
     logger.info(f"Starting {settings.PROJECT_NAME} (v{settings.VERSION}) in [{settings.ENVIRONMENT}] mode.")
     
+    # Ensure all tables exist in database
+    from app.database.base import Base
+    import app.models  # noqa: F401
+    from app.database.session import engine
+    Base.metadata.create_all(bind=engine)
+
     # Ensure uploads directory exists
     uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
     os.makedirs(uploads_dir, exist_ok=True)
@@ -76,6 +84,8 @@ app.include_router(knowledge_router)
 app.include_router(documents_router)
 app.include_router(search_router)
 app.include_router(chat_router)
+app.include_router(evaluation_router)
+
 
 
 if __name__ == "__main__":

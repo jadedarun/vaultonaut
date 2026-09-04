@@ -5,6 +5,7 @@ from app.models.document import Document
 from app.models.chunk import DocumentChunk
 from app.models.embedding import Embedding
 from app.models.conversation import Conversation, ConversationMessage
+from app.models.evaluation import EvaluationDataset, EvaluationItem, EvaluationRun, Experiment
 
 __all__ = [
     "Base",
@@ -14,5 +15,10 @@ __all__ = [
     "DocumentChunk",
     "Embedding",
     "Conversation",
-    "ConversationMessage"
+    "ConversationMessage",
+    "EvaluationDataset",
+    "EvaluationItem",
+    "EvaluationRun",
+    "Experiment"
 ]
+

@@ -118,10 +118,13 @@ def test_similarity_search_endpoint(client, auth_headers, test_user):
     upload_res = client.post("/api/documents/upload", files={"file": ("parsing.txt", io.BytesIO(content), "text/plain")}, headers=auth_headers)
     assert upload_res.status_code == 201, f"Upload failed: {upload_res.status_code} - {upload_res.text}"
 
+    doc_id = upload_res.json()["id"]
+
     # Search
     search_payload = {
         "query": "How are PDF files parsed?",
-        "top_k": 3
+        "top_k": 5,
+        "document_id": doc_id
     }
     response = client.post("/api/search/similarity", json=search_payload, headers=dev_headers)
     assert response.status_code == 200
@@ -129,6 +132,7 @@ def test_similarity_search_endpoint(client, auth_headers, test_user):
     assert data["total_retrieved"] >= 1
     assert len(data["results"]) >= 1
     assert "similarity_score" in data["results"][0]
+
 
 
 def test_vector_deletion_sync(client, auth_headers, db_session):

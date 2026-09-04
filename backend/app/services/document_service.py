@@ -296,7 +296,7 @@ def process_document_pipeline(
         db.commit()
 
         # STAGE 6: AI Preprocessing, Chunking, Embedding & Vector Indexing
-        vector_sync_service.process_ai_indexing(db, document, extracted.text)
+        vector_sync_service.process_ai_indexing(db, document, extracted.text, pages=extracted.pages)
 
         document.status = "completed"
         document.processing_stage = "completed"

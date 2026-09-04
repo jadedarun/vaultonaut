@@ -75,6 +75,9 @@ class VectorStoreService:
                 "chunk_index": chunk_data["chunk_index"],
                 "character_count": chunk_data["character_count"],
                 "token_count": chunk_data["token_count"],
+                "page_number": int(chunk_data.get("page_number", 1)),
+                "section_title": str(chunk_data.get("section_title", "")),
+                "strategy": str(chunk_data.get("strategy", "fixed_overlap")),
                 "title": document_metadata.get("title", ""),
                 "original_filename": document_metadata.get("original_filename", ""),
                 "category": document_metadata.get("category", "General"),
@@ -148,6 +151,8 @@ class VectorStoreService:
                 where=where_clause,
                 include=["documents", "metadatas", "distances"]
             )
+
+
 
             retrieved_chunks = []
             if results and results.get("ids") and len(results["ids"]) > 0:

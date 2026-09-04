@@ -35,12 +35,17 @@ class ContextBuilderService:
             filename = meta.get("original_filename") or "File"
             category = meta.get("category", "General")
             chunk_idx = meta.get("chunk_index", 0)
+            page_number = meta.get("page_number", 1)
+            section_title = meta.get("section_title", "")
             score = chunk.get("similarity_score", 0.0)
 
+            section_line = f"Section: {section_title}\n" if section_title else ""
             block = (
                 f"--- SOURCE ITEM {idx} ---\n"
                 f"Document Title: {doc_title}\n"
                 f"Filename: {filename}\n"
+                f"Page: {page_number}\n"
+                f"{section_line}"
                 f"Category: {category}\n"
                 f"Chunk Index: {chunk_idx}\n"
                 f"Similarity Score: {score}\n"
@@ -53,10 +58,12 @@ class ContextBuilderService:
                 "document_title": doc_title,
                 "filename": filename,
                 "category": category,
+                "page_number": page_number,
+                "section_title": section_title,
                 "chunk_index": chunk_idx,
                 "similarity_score": score,
                 "vector_id": chunk.get("vector_id"),
-                "snippet": chunk.get("chunk_text", "")[:200],
+                "snippet": chunk.get("chunk_text", "")[:250],
                 "chunk_text": chunk.get("chunk_text", "")
             })
 
@@ -65,3 +72,4 @@ class ContextBuilderService:
 
 
 context_builder_service = ContextBuilderService()
+

@@ -59,38 +59,53 @@ class GeminiProvider(BaseLLMProvider):
             logger.warning("Gemini SDK or API key not available.")
             raise RuntimeError("Gemini API key is not configured in backend environment settings.")
 
-        try:
-            # Construct generation config
-            config_args = {
-                "temperature": temperature,
-                "max_output_tokens": max_tokens or 2048
-            }
-            if response_mime_type:
-                config_args["response_mime_type"] = response_mime_type
-            gen_config = genai.GenerationConfig(**config_args)
-
-            # Initialize generative model
-            model = genai.GenerativeModel(
-                model_name=active_model_name,
-                generation_config=gen_config,
-                system_instruction=system_prompt if system_prompt else None
-            )
-
-            response = model.generate_content(prompt)
-            latency_ms = round((time.time() - start_time) * 1000, 2)
-
-            text_content = response.text if response and hasattr(response, "text") else ""
-
-            return {
-                "content": text_content.strip(),
-                "model": active_model_name,
-                "provider": self.provider_name,
-                "latency_ms": latency_ms,
-                "token_usage": {
-                    "prompt_tokens": getattr(response, "prompt_feedback", None) or 0,
-                    "candidates_tokens": 0
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                # Construct generation config
+                config_args = {
+                    "temperature": temperature,
+                    "max_output_tokens": max_tokens or 2048
                 }
-            }
-        except Exception as err:
-            logger.error(f"Gemini API generation error: {err}")
-            raise RuntimeError(f"Gemini generation failed: {str(err)}")
+                if response_mime_type:
+                    config_args["response_mime_type"] = response_mime_type
+                gen_config = genai.GenerationConfig(**config_args)
+
+                # Initialize generative model
+                model = genai.GenerativeModel(
+                    model_name=active_model_name,
+                    generation_config=gen_config,
+                    system_instruction=system_prompt if system_prompt else None
+                )
+
+                response = model.generate_content(prompt)
+                latency_ms = round((time.time() - start_time) * 1000, 2)
+
+                text_content = response.text if response and hasattr(response, "text") else ""
+
+                return {
+                    "content": text_content.strip(),
+                    "model": active_model_name,
+                    "provider": self.provider_name,
+                    "latency_ms": latency_ms,
+                    "token_usage": {
+                        "prompt_tokens": getattr(response, "prompt_feedback", None) or 0,
+                        "candidates_tokens": 0
+                    }
+                }
+            except Exception as err:
+                err_str = str(err)
+                if ("429" in err_str or "quota" in err_str.lower() or "resource_exhausted" in err_str.lower()) and attempt < max_retries - 1:
+                    wait_time = 15 * (attempt + 1)
+                    if "retry in " in err_str:
+                        try:
+                            seconds_str = err_str.split("retry in ")[1].split("s")[0].strip()
+                            wait_time = min(int(float(seconds_str)) + 2, 45)
+                        except Exception:
+                            pass
+                    logger.warning(f"Gemini rate limit (429). Retrying in {wait_time}s (attempt {attempt+1}/{max_retries})...")
+                    time.sleep(wait_time)
+                else:
+                    logger.error(f"Gemini API generation error: {err}")
+                    raise RuntimeError(f"Gemini generation failed: {str(err)}")
+

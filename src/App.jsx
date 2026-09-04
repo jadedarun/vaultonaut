@@ -35,7 +35,6 @@ import { useDocuments } from './context/DocumentContext';
 import GradientText from './components/GradientText';
 import LineSidebar from './components/LineSidebar';
 import GradientBlinds from './components/GradientBlinds';
-import GradientLogo from './components/GradientLogo/GradientLogo';
 import { AnimatePresence } from 'framer-motion';
 import OnboardingFlow from './components/OnboardingFlow';
 import DashboardSection from './components/sections/DashboardSection';
@@ -384,13 +383,17 @@ export default function App() {
       {/* Sidebar Panel */}
       <aside className="sidebar-container">
         <div>
-          <div className="logo-section" style={{ marginBottom: '1.6rem' }}>
-            <GradientLogo 
-              variant="pill" 
-              textSize="text-2xl" 
-              iconSize={24} 
-              theme={theme}
-            />
+          <div className="logo-section">
+            <HardDrive size={28} className="logo-icon" style={{ color: 'var(--color-arctic-1)' }} />
+            <span className="logo-text">
+              <GradientText
+                colors={theme === 'light' ? ['#111827', '#374151', '#4b5563', '#111827'] : ['#ffffff', '#e4e4e7', '#a1a1aa', '#ffffff']}
+                animationSpeed={5}
+                showBorder={false}
+              >
+                Vaultonaut
+              </GradientText>
+            </span>
           </div>
           
           <div className="sidebar-nav">
