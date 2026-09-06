@@ -1,163 +1,222 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   BarChart2, 
-  Activity, 
+  BookOpen, 
   Layers, 
-  AlertTriangle, 
-  CheckCircle, 
-  XCircle, 
-  Play, 
-  RefreshCw, 
-  Sliders, 
-  ShieldCheck, 
-  Database, 
-  Cpu, 
-  FileText, 
+  GraduationCap, 
+  MessageSquare, 
   Clock, 
-  ExternalLink,
-  ChevronDown,
-  ChevronRight,
-  TrendingUp,
-  Info,
-  Trash2
+  FileText, 
+  Calendar, 
+  RefreshCw, 
+  CheckCircle, 
+  ChevronRight, 
+  TrendingUp, 
+  Sparkles, 
+  Send, 
+  Upload, 
+  HardDrive, 
+  Award,
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
-import { useDocuments } from '../../context/DocumentContext';
-import { 
-  runEvaluation, 
-  getEvaluationRuns, 
-  getEvaluationRun, 
-  runChunkingExperiment, 
-  runThresholdSweep, 
-  getExperiments, 
-  getCacheStats, 
-  clearCache,
-  getBenchmarkDataset
-} from '../../api/evaluation';
+import { getAnalyticsOverview } from '../../api/analytics';
 
 export default function AnalyticsSection() {
-  const { stats } = useDocuments();
-  const [activeTab, setActiveTab] = useState('evaluation'); // 'overview', 'evaluation', 'experiments', 'failures'
-
-  // Evaluation state
-  const [evalRuns, setEvalRuns] = useState([]);
-  const [selectedRun, setSelectedRun] = useState(null);
-  const [isRunningEval, setIsRunningEval] = useState(false);
-  const [topK, setTopK] = useState(5);
-  const [threshold, setThreshold] = useState(0.45);
-  const [chunkStrategy, setChunkStrategy] = useState('fixed_overlap');
-  const [sampleLimit, setSampleLimit] = useState(20);
-  const [expandedQuestion, setExpandedQuestion] = useState(null);
-
-  // Experiment state
-  const [chunkingExp, setChunkingExp] = useState(null);
-  const [thresholdExp, setThresholdExp] = useState(null);
-  const [isRunningChunkExp, setIsRunningChunkExp] = useState(false);
-  const [isRunningThreshExp, setIsRunningThreshExp] = useState(false);
-
-  // Cache & Dataset state
-  const [cacheStats, setCacheStats] = useState(null);
-  const [datasetMeta, setDatasetMeta] = useState(null);
+  const navigate = useNavigate();
+  const [timeRange, setTimeRange] = useState('30d'); // '7d' | '30d' | 'all'
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [statusMessage, setStatusMessage] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Initial Data Fetch
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  const fetchAnalytics = async (range = timeRange, isManualRefresh = false) => {
+    if (isManualRefresh) setIsRefreshing(true);
+    else setLoading(true);
+    setError(null);
 
-  const loadDashboardData = async () => {
     try {
-      setLoading(true);
-      const [runsData, cacheData, dsData, expsData] = await Promise.allSettled([
-        getEvaluationRuns(),
-        getCacheStats(),
-        getBenchmarkDataset(),
-        getExperiments()
-      ]);
-
-      if (runsData.status === 'fulfilled' && runsData.value.length > 0) {
-        setEvalRuns(runsData.value);
-        // Load detailed latest run
-        const latestDetail = await getEvaluationRun(runsData.value[0].run_id);
-        setSelectedRun(latestDetail);
-      }
-
-      if (cacheData.status === 'fulfilled') setCacheStats(cacheData.value);
-      if (dsData.status === 'fulfilled') setDatasetMeta(dsData.value);
-
-      if (expsData.status === 'fulfilled' && expsData.value.length > 0) {
-        const cExp = expsData.value.find(e => e.experiment_type === 'chunking_comparison');
-        const tExp = expsData.value.find(e => e.experiment_type === 'threshold_sweep');
-        if (cExp) setChunkingExp(cExp.results_summary?.matrix || null);
-        if (tExp) setThresholdExp(tExp.results_summary?.sweep || null);
-      }
+      const data = await getAnalyticsOverview(range);
+      setAnalytics(data);
     } catch (err) {
-      console.error('Failed loading evaluation dashboard data:', err);
+      console.error('Failed to load user learning analytics:', err);
+      setError('Could not load your analytics. Please verify your connection.');
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
-  const handleRunEvaluation = async () => {
+  useEffect(() => {
+    fetchAnalytics(timeRange);
+  }, [timeRange]);
+
+  const handleTimeRangeChange = (range) => {
+    setTimeRange(range);
+  };
+
+  const handleRefresh = () => {
+    fetchAnalytics(timeRange, true);
+  };
+
+  const formatRelativeTime = (dateStr) => {
+    if (!dateStr) return '';
     try {
-      setIsRunningEval(true);
-      setStatusMessage('Executing real evaluation pipeline against Google Gemini & ChromaDB...');
-      const result = await runEvaluation({
-        top_k: topK,
-        similarity_threshold: threshold,
-        chunking_strategy: chunkStrategy,
-        sample_limit: sampleLimit,
-        run_name: `Benchmark Run (k=${topK}, th=${threshold})`
-      });
-      setSelectedRun(result);
-      const updatedRuns = await getEvaluationRuns();
-      setEvalRuns(updatedRuns);
-      const updatedCache = await getCacheStats();
-      setCacheStats(updatedCache);
-      setStatusMessage('Evaluation run completed successfully!');
-      setTimeout(() => setStatusMessage(''), 4000);
-    } catch (err) {
-      console.error('Evaluation run failed:', err);
-      setStatusMessage('Evaluation run failed. Check backend logs.');
-    } finally {
-      setIsRunningEval(false);
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 30) return `${diffDays}d ago`;
+      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    } catch {
+      return '';
     }
   };
 
-  const handleRunChunkingExperiment = async () => {
-    try {
-      setIsRunningChunkExp(true);
-      const res = await runChunkingExperiment();
-      setChunkingExp(res.comparison_matrix);
-    } catch (err) {
-      console.error('Chunking experiment failed:', err);
-    } finally {
-      setIsRunningChunkExp(false);
+  const navigateToConversation = (convId) => {
+    if (convId) {
+      localStorage.setItem('active_conversation_id', convId);
     }
+    navigate('/ai-workspace');
   };
 
-  const handleRunThresholdSweep = async () => {
-    try {
-      setIsRunningThreshExp(true);
-      const res = await runThresholdSweep();
-      setThresholdExp(res.sweep_data);
-    } catch (err) {
-      console.error('Threshold sweep failed:', err);
-    } finally {
-      setIsRunningThreshExp(false);
-    }
-  };
+  if (loading && !analytics) {
+    return (
+      <div className="glass-card" style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+        <RefreshCw 
+          size={32} 
+          style={{ 
+            animation: 'spin 1.5s linear infinite', 
+            color: 'var(--color-arctic-1)', 
+            margin: '0 auto 1.2rem auto' 
+          }} 
+        />
+        <h3 style={{ margin: 0, color: 'var(--color-arctic-1)' }}>Loading Your Learning Analytics</h3>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+          Aggregating your vault documents, study conversations, and learning progress...
+        </p>
+      </div>
+    );
+  }
 
-  const handleClearCache = async () => {
-    try {
-      await clearCache();
-      const updated = await getCacheStats();
-      setCacheStats(updated);
-    } catch (err) {
-      console.error('Clear cache failed:', err);
-    }
-  };
+  if (error && !analytics) {
+    return (
+      <div className="glass-card" style={{ padding: '3rem 2rem', textAlign: 'center' }}>
+        <AlertCircle size={40} color="#f87171" style={{ margin: '0 auto 1rem auto' }} />
+        <h3 style={{ color: 'var(--color-arctic-1)', margin: 0 }}>Analytics Unavailable</h3>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.5rem' }}>{error}</p>
+        <button 
+          className="btn-white-solid" 
+          onClick={() => fetchAnalytics(timeRange)} 
+          style={{ marginTop: '1.5rem', marginInline: 'auto' }}
+        >
+          <RefreshCw size={16} /> Try Again
+        </button>
+      </div>
+    );
+  }
+
+  const {
+    has_data,
+    overview,
+    knowledge_library,
+    study_activity,
+    most_studied,
+    learning_progress,
+    recent_activity,
+    insights
+  } = analytics || {};
+
+  // Empty State for Brand New Users
+  if (!has_data) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        style={{ display: 'flex', flexDirection: 'column', gap: '2rem', textAlign: 'left' }}
+      >
+        {/* Header */}
+        <div className="glass-card" style={{ padding: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <span className="badge-tag" style={{ marginBottom: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                <TrendingUp size={12} /> Personal Learning & Knowledge Analytics
+              </span>
+              <h1 style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.3rem 0', color: 'var(--color-arctic-1)' }}>
+                Analytics
+              </h1>
+              <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem' }}>
+                Understand your knowledge, study activity, and learning progress.
+              </p>
+            </div>
+            <button 
+              className="btn-white-outline" 
+              onClick={handleRefresh} 
+              disabled={isRefreshing}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <RefreshCw size={15} className={isRefreshing ? 'spin-icon' : ''} />
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        {/* Empty State Banner */}
+        <div className="glass-card" style={{ padding: '3.5rem 2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ 
+            width: 64, 
+            height: 64, 
+            borderRadius: '50%', 
+            background: 'rgba(255, 255, 255, 0.05)', 
+            border: '1px solid var(--glass-border)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            color: 'var(--color-arctic-1)'
+          }}>
+            <BarChart2 size={32} />
+          </div>
+
+          <div style={{ maxWidth: 520 }}>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 600, color: 'var(--color-arctic-1)', margin: '0 0 0.6rem 0' }}>
+              Your learning analytics will appear here
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+              Upload a document, start an AI study conversation, or generate study cards to begin building your personal knowledge and learning history.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.5rem' }}>
+            <button className="btn-white-solid" onClick={() => navigate('/upload-center')}>
+              <Upload size={16} /> Upload Material
+            </button>
+            <button className="btn-white-outline" onClick={() => navigate('/ai-workspace')}>
+              <Send size={16} /> Start a Conversation
+            </button>
+            <button className="btn-white-outline" onClick={() => navigate('/learning-studio')}>
+              <GraduationCap size={16} /> Open Learning Studio
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Calculate max daily activity for scaling SVG trend
+  const dailyPoints = study_activity?.daily_activity || [];
+  const maxDailyQuestions = Math.max(...dailyPoints.map(p => p.questions), 1);
+  const maxDailyDocs = Math.max(...dailyPoints.map(p => p.documents), 1);
+  const maxActivityValue = Math.max(maxDailyQuestions, maxDailyDocs, 5);
 
   return (
     <motion.div
@@ -165,681 +224,765 @@ export default function AnalyticsSection() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.25 }}
-      style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem', textAlign: 'left', width: '100%' }}
+      style={{ display: 'flex', flexDirection: 'column', gap: '2rem', textAlign: 'left' }}
     >
-      {/* Top Header & Tab Navigation Bar */}
-      <div className="glass-card" style={{ padding: '1.2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+      {/* 1. Page Header & Time Range Filter */}
+      <div className="glass-card" style={{ padding: '1.8rem 2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.2rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-primary)', margin: 0 }}>
-              <Activity size={24} style={{ color: 'var(--color-arctic-3)' }} />
-              AI Intelligence & Evaluation Engineering Lab
-            </h2>
-            <p style={{ margin: '0.3rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Quantitative information retrieval benchmarking, multi-strategy chunking, grounding verification, and failure analysis.
+            <span className="badge-tag" style={{ marginBottom: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+              <TrendingUp size={12} /> Personal Learning & Knowledge Analytics
+            </span>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.3rem 0', color: 'var(--color-arctic-1)' }}>
+              Analytics
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem' }}>
+              Understand your knowledge, study activity, and learning progress.
             </p>
           </div>
-          {statusMessage && (
-            <div className="badge-tag" style={{ background: 'rgba(56, 189, 248, 0.15)', borderColor: 'var(--color-arctic-3)', color: 'var(--color-arctic-1)' }}>
-              {statusMessage}
-            </div>
-          )}
-        </div>
 
-        {/* 4 Sleek Tabs */}
-        <div style={{ display: 'flex', gap: '0.6rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem', flexWrap: 'wrap' }}>
-          {[
-            { id: 'evaluation', label: 'RAG Evaluation Hub', icon: <Activity size={16} /> },
-            { id: 'experiments', label: 'Chunking & Threshold Experiments', icon: <Layers size={16} /> },
-            { id: 'failures', label: 'Failure Analysis & Debugger', icon: <AlertTriangle size={16} /> },
-            { id: 'overview', label: 'Vault Ingestion & Cache', icon: <BarChart2 size={16} /> }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.6rem 1.1rem',
-                borderRadius: '0.5rem',
-                border: activeTab === tab.id ? '1px solid var(--color-arctic-3)' : '1px solid transparent',
-                background: activeTab === tab.id ? 'rgba(128, 198, 232, 0.12)' : 'transparent',
-                color: activeTab === tab.id ? 'var(--color-arctic-1)' : 'var(--text-secondary)',
-                fontWeight: activeTab === tab.id ? 700 : 500,
-                fontSize: '0.9rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
+            {/* Time Filter Pill Buttons */}
+            <div style={{ 
+              display: 'flex', 
+              background: 'var(--input-bg)', 
+              borderRadius: '0.5rem', 
+              padding: '0.25rem', 
+              border: '1px solid var(--glass-border)' 
+            }}>
+              {[
+                { id: '7d', label: '7 Days' },
+                { id: '30d', label: '30 Days' },
+                { id: 'all', label: 'All Time' }
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => handleTimeRangeChange(f.id)}
+                  style={{
+                    padding: '0.4rem 0.9rem',
+                    fontSize: '0.85rem',
+                    fontWeight: timeRange === f.id ? 600 : 500,
+                    borderRadius: '0.35rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: timeRange === f.id ? 'var(--color-arctic-1)' : 'transparent',
+                    color: timeRange === f.id ? 'var(--bg-dark)' : 'var(--text-secondary)',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            <button 
+              className="btn-white-outline" 
+              onClick={handleRefresh} 
+              disabled={isRefreshing}
+              title="Refresh Analytics"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.8rem' }}
             >
-              {tab.icon}
-              {tab.label}
+              <RefreshCw size={15} className={isRefreshing ? 'spin-icon' : ''} />
+              <span style={{ fontSize: '0.85rem' }}>Refresh</span>
             </button>
-          ))}
+          </div>
         </div>
       </div>
 
-      {/* TAB 1: RAG EVALUATION HUB */}
-      {activeTab === 'evaluation' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Interactive Benchmark Controls Bar */}
-          <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Sliders size={18} style={{ color: 'var(--color-arctic-3)' }} />
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                  Interactive Evaluation Controls
-                </h3>
-              </div>
-              <button
-                onClick={handleRunEvaluation}
-                disabled={isRunningEval}
-                style={{
+      {/* 2. Overview Metrics Cards (Real DB Values) */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
+        gap: '1.2rem' 
+      }}>
+        {/* Card 1: Documents */}
+        <div className="glass-card" style={{ padding: '1.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Documents</span>
+            <div style={{ color: 'var(--color-arctic-1)' }}><FileText size={18} /></div>
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-arctic-1)', lineHeight: 1.1 }}>
+            {overview?.total_documents || 0}
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.4rem 0 0 0' }}>
+            Knowledge materials in your vault
+          </p>
+          <div style={{ marginTop: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--color-arctic-2)' }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+            {overview?.ai_ready_documents || 0} indexed & ready for study
+          </div>
+        </div>
+
+        {/* Card 2: Conversations */}
+        <div className="glass-card" style={{ padding: '1.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Conversations</span>
+            <div style={{ color: 'var(--color-arctic-1)' }}><MessageSquare size={18} /></div>
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-arctic-1)', lineHeight: 1.1 }}>
+            {overview?.total_conversations || 0}
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.4rem 0 0 0' }}>
+            AI study conversations
+          </p>
+          <div style={{ marginTop: '0.8rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            Across all saved learning sessions
+          </div>
+        </div>
+
+        {/* Card 3: Study Materials */}
+        <div className="glass-card" style={{ padding: '1.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Study Materials</span>
+            <div style={{ color: 'var(--color-arctic-1)' }}><Layers size={18} /></div>
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-arctic-1)', lineHeight: 1.1 }}>
+            {overview?.total_study_materials || 0}
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.4rem 0 0 0' }}>
+            Flashcards and quizzes generated
+          </p>
+          <div style={{ marginTop: '0.8rem', fontSize: '0.75rem', color: 'var(--color-arctic-2)' }}>
+            {overview?.total_flashcards || 0} cards • {overview?.total_quiz_questions || 0} quiz items
+          </div>
+        </div>
+
+        {/* Card 4: Questions Asked */}
+        <div className="glass-card" style={{ padding: '1.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Questions Asked</span>
+            <div style={{ color: 'var(--color-arctic-1)' }}><Send size={18} /></div>
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-arctic-1)', lineHeight: 1.1 }}>
+            {overview?.total_questions_asked || 0}
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.4rem 0 0 0' }}>
+            Questions asked across your sessions
+          </p>
+          <div style={{ marginTop: '0.8rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            {study_activity?.period_questions || 0} asked in this {timeRange}
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Personal Learning Insights (Deterministic factual insights) */}
+      {insights && insights.length > 0 && (
+        <div className="glass-card" style={{ padding: '1.8rem 2rem' }}>
+          <div className="card-header-row" style={{ marginBottom: '1rem' }}>
+            <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem' }}>
+              <Sparkles size={18} className="logo-icon" /> Learning Insights
+            </h2>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Based on your actual library & study history
+            </span>
+          </div>
+
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+            gap: '1rem' 
+          }}>
+            {insights.map(ins => (
+              <div 
+                key={ins.id}
+                style={{ 
+                  background: 'var(--input-bg)', 
+                  padding: '1.1rem 1.2rem', 
+                  borderRadius: '0.6rem', 
+                  border: '1px solid var(--glass-border)',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.65rem 1.4rem',
-                  borderRadius: '0.5rem',
-                  border: 'none',
-                  background: isRunningEval ? 'rgba(255,255,255,0.1)' : 'var(--gradient-arctic)',
-                  color: '#0a0e17',
-                  fontWeight: 700,
-                  fontSize: '0.9rem',
-                  cursor: isRunningEval ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 0 15px rgba(56, 189, 248, 0.25)'
+                  flexDirection: 'column',
+                  gap: '0.4rem'
                 }}
               >
-                {isRunningEval ? <RefreshCw size={16} className="spin" /> : <Play size={16} />}
-                {isRunningEval ? 'Running Real Benchmark...' : 'Run Benchmark Evaluation'}
-              </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    background: ins.type === 'success' ? '#10b981' : ins.type === 'highlight' ? 'var(--color-arctic-1)' : 'var(--color-arctic-4)'
+                  }}></div>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>
+                    {ins.title}
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                  {ins.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 4. Two-Column Layout: Knowledge Library & AI Study Activity */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem' }}>
+        {/* Knowledge Library Analysis */}
+        <div className="glass-card" style={{ padding: '1.8rem', display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
+          <div className="card-header-row">
+            <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
+              <BookOpen size={18} className="logo-icon" /> Knowledge Library Analysis
+            </h2>
+            <button 
+              className="btn-white-outline" 
+              onClick={() => navigate('/knowledge-vault')}
+              style={{ padding: '0.35rem 0.7rem', fontSize: '0.8rem' }}
+            >
+              Open Vault <ChevronRight size={14} />
+            </button>
+          </div>
+
+          {/* Quick Metrics Bar */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(3, 1fr)', 
+            gap: '0.8rem', 
+            background: 'var(--input-bg)', 
+            padding: '1rem', 
+            borderRadius: '0.6rem',
+            border: '1px solid var(--glass-border)'
+          }}>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Storage</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)', marginTop: '0.2rem' }}>
+                {knowledge_library?.total_storage_mb || 0} MB
+              </div>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Est. Reading</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)', marginTop: '0.2rem' }}>
+                {knowledge_library?.total_reading_time_mins || 0} mins
+              </div>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Word Count</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)', marginTop: '0.2rem' }}>
+                {(knowledge_library?.total_words || 0).toLocaleString()}
+              </div>
+            </div>
+          </div>
+
+          {/* Document Types Distribution */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>
+                Document Format Distribution
+              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {knowledge_library?.total_documents || 0} total files
+              </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.2rem' }}>
-              {/* Top-K Slider */}
-              <div style={{ background: 'var(--input-bg)', padding: '0.9rem 1.1rem', borderRadius: '0.6rem', border: '1px solid var(--glass-border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Top-K Retrieval Candidates</span>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-arctic-1)', fontFamily: 'var(--font-mono)' }}>k = {topK}</span>
+            {knowledge_library?.file_type_distribution && knowledge_library.file_type_distribution.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {/* Proportional Stacked Bar */}
+                <div style={{ 
+                  height: 10, 
+                  borderRadius: 5, 
+                  display: 'flex', 
+                  overflow: 'hidden', 
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid var(--glass-border)'
+                }}>
+                  {knowledge_library.file_type_distribution.map((item, idx) => {
+                    const colors = ['#ffffff', '#a1a1aa', '#71717a', '#3f3f46'];
+                    return (
+                      <div 
+                        key={item.extension}
+                        title={`${item.extension}: ${item.count} files (${item.percentage}%)`}
+                        style={{ 
+                          width: `${item.percentage}%`, 
+                          background: colors[idx % colors.length] 
+                        }}
+                      />
+                    );
+                  })}
                 </div>
-                <input 
-                  type="range" min="1" max="10" step="1" 
-                  value={topK} 
-                  onChange={(e) => setTopK(parseInt(e.target.value))}
-                  style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-arctic-3)' }} 
-                />
-              </div>
 
-              {/* Threshold Slider */}
-              <div style={{ background: 'var(--input-bg)', padding: '0.9rem 1.1rem', borderRadius: '0.6rem', border: '1px solid var(--glass-border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Similarity Gate Cutoff</span>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-arctic-1)', fontFamily: 'var(--font-mono)' }}>{threshold.toFixed(2)}</span>
-                </div>
-                <input 
-                  type="range" min="0.30" max="0.75" step="0.05" 
-                  value={threshold} 
-                  onChange={(e) => setThreshold(parseFloat(e.target.value))}
-                  style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-arctic-3)' }} 
-                />
-              </div>
-
-              {/* Chunking Strategy Selector */}
-              <div style={{ background: 'var(--input-bg)', padding: '0.9rem 1.1rem', borderRadius: '0.6rem', border: '1px solid var(--glass-border)' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.4rem' }}>Chunking Strategy</span>
-                <select
-                  value={chunkStrategy}
-                  onChange={(e) => setChunkStrategy(e.target.value)}
-                  style={{
-                    width: '100%',
-                    background: 'transparent',
-                    border: '1px solid var(--glass-border)',
-                    color: 'var(--text-primary)',
-                    padding: '0.4rem',
-                    borderRadius: '0.4rem',
-                    fontSize: '0.85rem'
-                  }}
-                >
-                  <option value="fixed_overlap" style={{ background: '#0e1626' }}>Fixed + Overlap (800 / 150)</option>
-                  <option value="fixed_no_overlap" style={{ background: '#0e1626' }}>Fixed (500 chars, 0 overlap)</option>
-                  <option value="semantic_paragraph" style={{ background: '#0e1626' }}>Semantic / Paragraph-aware</option>
-                </select>
-              </div>
-
-              {/* Sample Limit */}
-              <div style={{ background: 'var(--input-bg)', padding: '0.9rem 1.1rem', borderRadius: '0.6rem', border: '1px solid var(--glass-border)' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.4rem' }}>Questions Evaluated</span>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {[10, 20, 35].map(cnt => (
-                    <button
-                      key={cnt}
-                      onClick={() => setSampleLimit(cnt)}
-                      style={{
-                        flex: 1,
-                        padding: '0.35rem',
-                        fontSize: '0.8rem',
-                        fontWeight: sampleLimit === cnt ? 700 : 500,
-                        background: sampleLimit === cnt ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
-                        color: sampleLimit === cnt ? 'var(--color-arctic-1)' : 'var(--text-secondary)',
-                        border: sampleLimit === cnt ? '1px solid var(--color-arctic-3)' : '1px solid var(--glass-border)',
-                        borderRadius: '0.3rem',
-                        cursor: 'pointer'
+                {/* Legend Chips */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: '0.4rem' }}>
+                  {knowledge_library.file_type_distribution.map(item => (
+                    <div 
+                      key={item.extension}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.4rem', 
+                        fontSize: '0.8rem', 
+                        padding: '0.25rem 0.6rem',
+                        background: 'var(--input-bg)',
+                        borderRadius: '0.35rem',
+                        border: '1px solid var(--glass-border)'
                       }}
                     >
-                      {cnt === 35 ? 'All 35' : `${cnt} Qs`}
-                    </button>
+                      <span style={{ fontWeight: 600, color: 'var(--color-arctic-1)' }}>{item.extension}</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{item.count} ({item.percentage}%)</span>
+                    </div>
                   ))}
                 </div>
               </div>
+            ) : (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>No file formats recorded.</p>
+            )}
+          </div>
+
+          {/* Recently Uploaded Documents */}
+          <div>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-arctic-1)', display: 'block', marginBottom: '0.6rem' }}>
+              Recently Added to Vault
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {knowledge_library?.recent_documents && knowledge_library.recent_documents.length > 0 ? (
+                knowledge_library.recent_documents.map(doc => (
+                  <div 
+                    key={doc.id}
+                    onClick={() => navigate('/knowledge-vault')}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between',
+                      padding: '0.6rem 0.8rem', 
+                      background: 'var(--input-bg)', 
+                      borderRadius: '0.45rem',
+                      border: '1px solid var(--glass-border)',
+                      cursor: 'pointer',
+                      transition: 'border-color 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
+                      <span className="badge-tag" style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem' }}>
+                        {doc.file_extension}
+                      </span>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--color-arctic-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {doc.title}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      <span>{doc.file_size_formatted}</span>
+                      <span>•</span>
+                      <span>{formatRelativeTime(doc.uploaded_at)}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>No documents uploaded yet.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* AI Study Activity & Trend */}
+        <div className="glass-card" style={{ padding: '1.8rem', display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
+          <div className="card-header-row">
+            <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
+              <BarChart2 size={18} className="logo-icon" /> AI Study Activity
+            </h2>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Period: {timeRange === '7d' ? 'Past 7 Days' : timeRange === '30d' ? 'Past 30 Days' : 'All Time'}
+            </span>
+          </div>
+
+          {/* Period Summary Pills */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(3, 1fr)', 
+            gap: '0.8rem', 
+            background: 'var(--input-bg)', 
+            padding: '1rem', 
+            borderRadius: '0.6rem',
+            border: '1px solid var(--glass-border)'
+          }}>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Questions</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)', marginTop: '0.2rem' }}>
+                {study_activity?.period_questions || 0}
+              </div>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Conversations</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)', marginTop: '0.2rem' }}>
+                {study_activity?.period_conversations || 0}
+              </div>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Materials</span>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)', marginTop: '0.2rem' }}>
+                {study_activity?.period_materials || 0}
+              </div>
             </div>
           </div>
 
-          {/* Golden Metrics Summary Grid */}
-          {selectedRun && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1rem' }}>
-              {[
-                { label: 'Recall@K', value: `${(selectedRun.metrics.recall_at_k * 100).toFixed(1)}%`, desc: 'Evidence capture rate in top-K', color: '#38bdf8' },
-                { label: 'Precision@K', value: `${(selectedRun.metrics.precision_at_k * 100).toFixed(1)}%`, desc: 'Relevance ratio in candidates', color: '#818cf8' },
-                { label: 'Hit Rate@K', value: `${(selectedRun.metrics.hit_rate * 100).toFixed(1)}%`, desc: 'Queries with ≥1 relevant chunk', color: '#34d399' },
-                { label: 'MRR', value: selectedRun.metrics.mrr.toFixed(3), desc: 'Mean Reciprocal Rank of 1st hit', color: '#f472b6' },
-                { label: 'Answer Correctness', value: `${(selectedRun.metrics.answer_correctness * 100).toFixed(1)}%`, desc: 'Token F1 vs Golden Answer', color: '#38bdf8' },
-                { label: 'Groundedness', value: `${(selectedRun.metrics.groundedness_score * 100).toFixed(1)}%`, desc: 'Context-attested factual claims', color: '#10b981' },
-                { label: 'Hallucination Rate', value: `${(selectedRun.metrics.hallucination_rate * 100).toFixed(1)}%`, desc: 'Unsupported assertions generated', color: '#f87171' },
-                { label: 'Refusal Accuracy', value: `${(selectedRun.metrics.refusal_accuracy * 100).toFixed(1)}%`, desc: 'Correct out-of-domain defense', color: '#a78bfa' }
-              ].map((card, i) => (
-                <div key={i} className="glass-card" style={{ padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{card.label}</div>
-                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: card.color, fontFamily: 'var(--font-mono)' }}>{card.value}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{card.desc}</div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Latency Breakdown Bar */}
-          {selectedRun?.latency && (
-            <div className="glass-card" style={{ padding: '1.2rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Clock size={18} style={{ color: 'var(--color-arctic-3)' }} />
-                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>End-to-End Latency Profile:</span>
-              </div>
-              <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>
-                <div><span style={{ color: 'var(--text-muted)' }}>Embedding & Vector Retrieval:</span> <strong style={{ color: '#38bdf8' }}>{selectedRun.latency.avg_retrieval_ms} ms</strong></div>
-                <div><span style={{ color: 'var(--text-muted)' }}>Gemini Generation:</span> <strong style={{ color: '#818cf8' }}>{selectedRun.latency.avg_llm_ms} ms</strong></div>
-                <div><span style={{ color: 'var(--text-muted)' }}>Total Roundtrip:</span> <strong style={{ color: '#34d399' }}>{selectedRun.latency.avg_total_ms} ms</strong></div>
+          {/* Daily Activity Chart (Clean SVG Histogram backed by real database timestamps) */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>
+                Activity Trend
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '0.75rem' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text-secondary)' }}>
+                  <span style={{ width: 8, height: 8, background: 'var(--color-arctic-1)', borderRadius: 2 }}></span>
+                  Questions
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text-muted)' }}>
+                  <span style={{ width: 8, height: 8, background: '#71717a', borderRadius: 2 }}></span>
+                  Documents
+                </span>
               </div>
             </div>
-          )}
 
-          {/* Individual Question Inspection Table */}
-          {selectedRun?.detailed_results && (
-            <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                  Evaluated Benchmark Questions ({selectedRun.detailed_results.length} Samples)
-                </h3>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Click any row to inspect context & ground truth</span>
-              </div>
+            {dailyPoints.length > 0 ? (
+              <div style={{ 
+                background: 'var(--input-bg)', 
+                padding: '1.2rem 1rem 0.8rem 1rem', 
+                borderRadius: '0.6rem',
+                border: '1px solid var(--glass-border)'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'flex-end', 
+                  gap: timeRange === '7d' ? '12px' : '4px', 
+                  height: 120,
+                  paddingBottom: '0.4rem',
+                  borderBottom: '1px solid var(--glass-border)'
+                }}>
+                  {dailyPoints.map(p => {
+                    const qHeight = Math.max(Math.round((p.questions / maxActivityValue) * 100), p.questions > 0 ? 8 : 2);
+                    const dHeight = Math.max(Math.round((p.documents / maxActivityValue) * 100), p.documents > 0 ? 8 : 2);
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {selectedRun.detailed_results.map((item, idx) => {
-                  const isExpanded = expandedQuestion === idx;
-                  const isSuccess = item.groundedness_score >= 0.5 && item.answer_correctness >= 0.5;
-
-                  return (
-                    <div 
-                      key={idx} 
-                      style={{ 
-                        background: 'var(--input-bg)', 
-                        borderRadius: '0.6rem', 
-                        border: '1px solid var(--glass-border)',
-                        overflow: 'hidden',
-                        transition: 'border 0.2s ease'
-                      }}
-                    >
+                    return (
                       <div 
-                        onClick={() => setExpandedQuestion(isExpanded ? null : idx)}
+                        key={p.date}
                         style={{ 
-                          padding: '0.9rem 1.1rem', 
+                          flex: 1, 
                           display: 'flex', 
-                          justifyContent: 'space-between', 
+                          flexDirection: 'column', 
                           alignItems: 'center', 
-                          cursor: 'pointer',
-                          gap: '1rem'
+                          height: '100%', 
+                          justifyContent: 'flex-end',
+                          gap: 2
                         }}
+                        title={`${p.label}: ${p.questions} questions, ${p.documents} docs, ${p.study_materials} materials`}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flex: 1 }}>
-                          {isExpanded ? <ChevronDown size={16} color="var(--color-arctic-3)" /> : <ChevronRight size={16} color="var(--text-muted)" />}
-                          <span style={{ 
-                            padding: '0.2rem 0.5rem', 
-                            fontSize: '0.7rem', 
-                            borderRadius: '0.3rem', 
-                            fontWeight: 700, 
-                            fontFamily: 'var(--font-mono)',
-                            background: item.is_unanswerable ? 'rgba(168, 85, 247, 0.15)' : 'rgba(56, 189, 248, 0.15)',
-                            color: item.is_unanswerable ? '#c084fc' : '#38bdf8'
-                          }}>
-                            {item.category.toUpperCase()}
-                          </span>
-                          <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500 }}>
-                            {item.question}
-                          </span>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
-                          <span style={{ 
-                            fontSize: '0.75rem', 
-                            fontFamily: 'var(--font-mono)', 
-                            padding: '0.2rem 0.6rem', 
-                            borderRadius: '1rem',
-                            fontWeight: 700,
-                            background: item.grounding_status === 'REFUSED' ? 'rgba(168, 85, 247, 0.2)' : item.grounding_status === 'SUPPORTED' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                            color: item.grounding_status === 'REFUSED' ? '#c084fc' : item.grounding_status === 'SUPPORTED' ? '#34d399' : '#f87171'
-                          }}>
-                            {item.grounding_status}
-                          </span>
-                          <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                            F1: <strong>{(item.answer_correctness * 100).toFixed(0)}%</strong>
-                          </span>
+                        <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', width: '100%', justifyContent: 'center' }}>
+                          <div 
+                            style={{ 
+                              width: timeRange === '7d' ? 14 : 6, 
+                              height: `${qHeight}%`, 
+                              background: p.questions > 0 ? 'var(--color-arctic-1)' : 'rgba(255,255,255,0.06)',
+                              borderRadius: '2px 2px 0 0'
+                            }} 
+                          />
+                          <div 
+                            style={{ 
+                              width: timeRange === '7d' ? 14 : 6, 
+                              height: `${dHeight}%`, 
+                              background: p.documents > 0 ? '#71717a' : 'rgba(255,255,255,0.03)',
+                              borderRadius: '2px 2px 0 0'
+                            }} 
+                          />
                         </div>
                       </div>
-
-                      {/* Expanded Details Drawer */}
-                      {isExpanded && (
-                        <div style={{ padding: '1rem 1.2rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.85rem' }}>
-                          <div>
-                            <strong style={{ color: 'var(--color-arctic-1)', display: 'block', marginBottom: '0.2rem' }}>Expected Golden Answer:</strong>
-                            <div style={{ color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.02)', padding: '0.6rem', borderRadius: '0.4rem' }}>
-                              {item.ground_truth_answer}
-                            </div>
-                          </div>
-
-                          <div>
-                            <strong style={{ color: '#34d399', display: 'block', marginBottom: '0.2rem' }}>Generated RAG Answer (Gemini):</strong>
-                            <div style={{ color: 'var(--text-primary)', background: 'rgba(16, 185, 129, 0.05)', padding: '0.6rem', borderRadius: '0.4rem', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
-                              {item.generated_answer}
-                            </div>
-                          </div>
-
-                          <div style={{ display: 'flex', gap: '1.5rem', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            <span>Chunks Retrieved: <strong style={{ color: 'var(--text-primary)' }}>{item.retrieved_count}</strong></span>
-                            <span>Recall@K: <strong style={{ color: 'var(--text-primary)' }}>{(item.recall_at_k * 100).toFixed(0)}%</strong></span>
-                            <span>Precision@K: <strong style={{ color: 'var(--text-primary)' }}>{(item.precision_at_k * 100).toFixed(0)}%</strong></span>
-                            <span>Groundedness: <strong style={{ color: 'var(--text-primary)' }}>{(item.groundedness_score * 100).toFixed(0)}%</strong></span>
-                            <span>Latency: <strong style={{ color: 'var(--text-primary)' }}>{item.total_latency_ms} ms</strong></span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB 2: CHUNKING & THRESHOLD EXPERIMENTS */}
-      {activeTab === 'experiments' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Chunking Strategy Comparison Experiment Card */}
-          <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                  Multi-Strategy Chunking Empirical Comparison
-                </h3>
-                <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  Evaluates the trade-offs of Strategy A (Fixed, No Overlap), Strategy B (Fixed + Overlap), and Strategy C (Semantic/Paragraph-Aware).
-                </p>
-              </div>
-              <button
-                onClick={handleRunChunkingExperiment}
-                disabled={isRunningChunkExp}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.6rem 1.2rem',
-                  borderRadius: '0.5rem',
-                  background: 'var(--gradient-arctic)',
-                  border: 'none',
-                  color: '#0a0e17',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  cursor: isRunningChunkExp ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {isRunningChunkExp ? <RefreshCw size={14} className="spin" /> : <Play size={14} />}
-                {isRunningChunkExp ? 'Running Comparison...' : 'Run Chunking Comparison'}
-              </button>
-            </div>
-
-            {/* Comparison Matrix Table */}
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                    <th style={{ padding: '0.8rem 0.6rem' }}>Chunking Strategy</th>
-                    <th style={{ padding: '0.8rem 0.6rem' }}>Recall@5</th>
-                    <th style={{ padding: '0.8rem 0.6rem' }}>Precision@5</th>
-                    <th style={{ padding: '0.8rem 0.6rem' }}>Hit Rate</th>
-                    <th style={{ padding: '0.8rem 0.6rem' }}>MRR</th>
-                    <th style={{ padding: '0.8rem 0.6rem' }}>Correctness</th>
-                    <th style={{ padding: '0.8rem 0.6rem' }}>Groundedness</th>
-                    <th style={{ padding: '0.8rem 0.6rem' }}>Hallucination</th>
-                    <th style={{ padding: '0.8rem 0.6rem' }}>Avg Latency</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(chunkingExp || [
-                    { strategy: 'fixed_no_overlap', label: 'Fixed (500 chars, 0 overlap)', recall_at_k: 0.742, precision_at_k: 0.420, hit_rate: 0.800, mrr: 0.680, answer_correctness: 0.640, groundedness: 0.760, hallucination_rate: 0.240, avg_latency_ms: 1210 },
-                    { strategy: 'fixed_overlap', label: 'Fixed + Overlap (800 / 150 chars)', recall_at_k: 0.915, precision_at_k: 0.580, hit_rate: 0.950, mrr: 0.825, answer_correctness: 0.785, groundedness: 0.890, hallucination_rate: 0.110, avg_latency_ms: 1260 },
-                    { strategy: 'semantic_paragraph', label: 'Semantic / Paragraph-Aware (~700 chars)', recall_at_k: 0.948, precision_at_k: 0.635, hit_rate: 0.980, mrr: 0.875, answer_correctness: 0.840, groundedness: 0.935, hallucination_rate: 0.065, avg_latency_ms: 1310 }
-                  ]).map((row, idx) => {
-                    const isBest = row.strategy === 'semantic_paragraph';
-                    return (
-                      <tr 
-                        key={idx} 
-                        style={{ 
-                          borderBottom: '1px solid rgba(255,255,255,0.04)',
-                          background: isBest ? 'rgba(56, 189, 248, 0.06)' : 'transparent',
-                          fontFamily: 'var(--font-mono)'
-                        }}
-                      >
-                        <td style={{ padding: '0.8rem 0.6rem', color: isBest ? 'var(--color-arctic-1)' : 'var(--text-primary)', fontWeight: 600 }}>
-                          {row.label} {isBest && <span style={{ fontSize: '0.7rem', color: '#10b981', marginLeft: '0.4rem' }}>★ Optimal</span>}
-                        </td>
-                        <td style={{ padding: '0.8rem 0.6rem', color: '#38bdf8' }}>{(row.recall_at_k * 100).toFixed(1)}%</td>
-                        <td style={{ padding: '0.8rem 0.6rem' }}>{(row.precision_at_k * 100).toFixed(1)}%</td>
-                        <td style={{ padding: '0.8rem 0.6rem', color: '#34d399' }}>{(row.hit_rate * 100).toFixed(1)}%</td>
-                        <td style={{ padding: '0.8rem 0.6rem' }}>{row.mrr.toFixed(3)}</td>
-                        <td style={{ padding: '0.8rem 0.6rem', color: '#818cf8' }}>{(row.answer_correctness * 100).toFixed(1)}%</td>
-                        <td style={{ padding: '0.8rem 0.6rem', color: '#10b981' }}>{(row.groundedness * 100).toFixed(1)}%</td>
-                        <td style={{ padding: '0.8rem 0.6rem', color: row.hallucination_rate > 0.15 ? '#f87171' : 'var(--text-secondary)' }}>
-                          {(row.hallucination_rate * 100).toFixed(1)}%
-                        </td>
-                        <td style={{ padding: '0.8rem 0.6rem', color: 'var(--text-muted)' }}>{row.avg_latency_ms} ms</td>
-                      </tr>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
+                </div>
+
+                {/* X-Axis Date Labels */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                  <span>{dailyPoints[0]?.label}</span>
+                  {dailyPoints.length > 2 && (
+                    <span>{dailyPoints[Math.floor(dailyPoints.length / 2)]?.label}</span>
+                  )}
+                  <span>{dailyPoints[dailyPoints.length - 1]?.label}</span>
+                </div>
+              </div>
+            ) : (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>No activity in this time window.</p>
+            )}
           </div>
 
-          {/* Similarity Threshold Sensitivity Sweep Card */}
-          <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                  Similarity Threshold Sensitivity Sweep (Precision vs. Recall Curve)
-                </h3>
-                <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  Maps the boundary between noisy context retrieval (low threshold) and false refusals (high threshold).
-                </p>
-              </div>
-              <button
-                onClick={handleRunThresholdSweep}
-                disabled={isRunningThreshExp}
-                style={{
+          <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
+            <button 
+              className="btn-white-solid" 
+              onClick={() => navigate('/ai-workspace')}
+              style={{ width: '100%', justifyContent: 'center' }}
+            >
+              <Send size={16} /> Continue Study Conversation
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Most Studied Knowledge (Real citations from user's AI conversations) */}
+      <div className="glass-card" style={{ padding: '1.8rem 2rem' }}>
+        <div className="card-header-row" style={{ marginBottom: '1rem' }}>
+          <div>
+            <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem' }}>
+              <Award size={18} className="logo-icon" /> Most Studied Knowledge
+            </h2>
+            <p className="card-desc" style={{ marginTop: '0.3rem' }}>
+              Documents and topics most frequently cited to answer your study questions.
+            </p>
+          </div>
+        </div>
+
+        {most_studied && most_studied.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+            {most_studied.map(item => (
+              <div 
+                key={item.title}
+                style={{ 
+                  background: 'var(--input-bg)', 
+                  padding: '1.2rem', 
+                  borderRadius: '0.6rem', 
+                  border: '1px solid var(--glass-border)',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.6rem 1.2rem',
-                  borderRadius: '0.5rem',
-                  background: 'var(--gradient-arctic)',
-                  border: 'none',
-                  color: '#0a0e17',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  cursor: isRunningThreshExp ? 'not-allowed' : 'pointer'
+                  flexDirection: 'column',
+                  gap: '0.8rem'
                 }}
               >
-                {isRunningThreshExp ? <RefreshCw size={14} className="spin" /> : <Play size={14} />}
-                {isRunningThreshExp ? 'Running Sweep...' : 'Run Threshold Sweep'}
-              </button>
-            </div>
-
-            {/* Sweep Bars & Table */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-              {(thresholdExp || [
-                { threshold: 0.30, recall_at_k: 0.965, precision_at_k: 0.380, hit_rate: 0.980, refusal_accuracy: 0.850, groundedness: 0.790, hallucination_rate: 0.150 },
-                { threshold: 0.45, recall_at_k: 0.920, precision_at_k: 0.620, hit_rate: 0.950, refusal_accuracy: 1.000, groundedness: 0.920, hallucination_rate: 0.050 },
-                { threshold: 0.60, recall_at_k: 0.780, precision_at_k: 0.790, hit_rate: 0.810, refusal_accuracy: 0.920, groundedness: 0.960, hallucination_rate: 0.030 },
-                { threshold: 0.75, recall_at_k: 0.450, precision_at_k: 0.910, hit_rate: 0.490, refusal_accuracy: 0.650, groundedness: 0.990, hallucination_rate: 0.010 }
-              ]).map((item, i) => {
-                const isOptimal = item.threshold === 0.45;
-                return (
-                  <div key={i} style={{ 
-                    background: isOptimal ? 'rgba(56, 189, 248, 0.08)' : 'var(--input-bg)', 
-                    padding: '1.2rem', 
-                    borderRadius: '0.6rem', 
-                    border: isOptimal ? '1px solid var(--color-arctic-3)' : '1px solid var(--glass-border)' 
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <span className="badge-tag" style={{ fontSize: '0.7rem' }}>
+                    {item.file_extension}
+                  </span>
+                  <span style={{ 
+                    fontSize: '0.8rem', 
+                    fontWeight: 600, 
+                    color: item.query_citations_count > 0 ? 'var(--color-arctic-1)' : 'var(--text-muted)',
+                    background: item.query_citations_count > 0 ? 'rgba(255,255,255,0.08)' : 'transparent',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '0.3rem'
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
-                      <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-arctic-1)', fontFamily: 'var(--font-mono)' }}>
-                        θ = {item.threshold.toFixed(2)}
-                      </span>
-                      {isOptimal && <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem', background: '#10b981', color: '#000', borderRadius: '0.8rem', fontWeight: 800 }}>BALANCED</span>}
-                    </div>
+                    {item.query_citations_count} {item.query_citations_count === 1 ? 'citation' : 'citations'}
+                  </span>
+                </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                          <span>Recall@5:</span> <strong style={{ color: '#38bdf8' }}>{(item.recall_at_k * 100).toFixed(0)}%</strong>
-                        </div>
-                        <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', marginTop: '0.2rem' }}>
-                          <div style={{ width: `${item.recall_at_k * 100}%`, height: '100%', background: '#38bdf8' }}></div>
-                        </div>
-                      </div>
+                <div>
+                  <h4 style={{ 
+                    margin: 0, 
+                    fontSize: '0.95rem', 
+                    fontWeight: 600, 
+                    color: 'var(--color-arctic-1)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {item.title}
+                  </h4>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.3rem 0 0 0' }}>
+                    {item.query_citations_count > 0 
+                      ? `Last cited: ${formatRelativeTime(item.last_studied_at)}`
+                      : 'Not yet queried in study chats'}
+                  </p>
+                </div>
 
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                          <span>Precision@5:</span> <strong style={{ color: '#818cf8' }}>{(item.precision_at_k * 100).toFixed(0)}%</strong>
-                        </div>
-                        <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', marginTop: '0.2rem' }}>
-                          <div style={{ width: `${item.precision_at_k * 100}%`, height: '100%', background: '#818cf8' }}></div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                          <span>Refusal Accuracy:</span> <strong style={{ color: '#34d399' }}>{(item.refusal_accuracy * 100).toFixed(0)}%</strong>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: FAILURE ANALYSIS & DEBUGGER */}
-      {activeTab === 'failures' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                Systematic Failure Mode Taxonomy & Diagnostics
-              </h3>
-              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                Categorizes all edge cases, semantic gaps, and hallucinations into actionable engineering root causes with prescriptive mitigations.
-              </p>
-            </div>
-
-            {/* Failure Distribution Badges */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-              {[
-                { mode: 'RETRIEVAL_MISS', label: 'Retrieval Miss', desc: 'Query failed to surface relevant chunks in top-K', count: selectedRun?.failure_diagnostics?.failure_breakdown?.RETRIEVAL_MISS?.count || 1, color: '#f87171' },
-                { mode: 'THRESHOLD_REJECTION', label: 'Threshold Rejection', desc: 'Chunk found but dropped by similarity cutoff', count: selectedRun?.failure_diagnostics?.failure_breakdown?.THRESHOLD_FALSE_REJECTION?.count || 0, color: '#fb923c' },
-                { mode: 'FALSE_REFUSAL', label: 'False Refusal', desc: 'Context present but LLM prematurely refused', count: selectedRun?.failure_diagnostics?.failure_breakdown?.FALSE_REFUSAL?.count || 0, color: '#facc15' },
-                { mode: 'HALLUCINATION', label: 'Hallucination', desc: 'Assertions produced with <40% context support', count: selectedRun?.failure_diagnostics?.failure_breakdown?.HALLUCINATION?.count || 1, color: '#e879f9' },
-                { mode: 'FALSE_ACCEPTANCE', label: 'False Acceptance', desc: 'Unanswerable query answered with fabrication', count: selectedRun?.failure_diagnostics?.failure_breakdown?.FALSE_ACCEPTANCE?.count || 0, color: '#ef4444' }
-              ].map((card, idx) => (
-                <div key={idx} style={{ background: 'var(--input-bg)', padding: '1.1rem', borderRadius: '0.6rem', border: '1px solid var(--glass-border)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: card.color }}>{card.label}</span>
-                    <span style={{ fontSize: '1.3rem', fontWeight: 800, fontFamily: 'var(--font-mono)', color: card.count > 0 ? card.color : 'var(--text-muted)' }}>
-                      {card.count}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: 'auto', paddingTop: '0.4rem', borderTop: '1px solid var(--glass-border)' }}>
+                  {item.has_flashcards && (
+                    <span style={{ fontSize: '0.7rem', color: 'var(--color-arctic-2)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <CheckCircle size={12} color="#10b981" /> Flashcards
                     </span>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>{card.desc}</div>
+                  )}
+                  {item.has_quiz && (
+                    <span style={{ fontSize: '0.7rem', color: 'var(--color-arctic-2)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <CheckCircle size={12} color="#10b981" /> Quiz
+                    </span>
+                  )}
+                  {!item.has_flashcards && !item.has_quiz && (
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                      No study cards created
+                    </span>
+                  )}
                 </div>
-              ))}
-            </div>
-
-            {/* Concrete Failure Examples & Prescribed Mitigations */}
-            <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-arctic-1)', margin: 0 }}>
-                Diagnosed Cases & Recommended Engineering Fixes:
-              </h4>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                {[
-                  {
-                    type: 'RETRIEVAL_MISS',
-                    question: 'How do you configure the CUDA kernel thread block size for PyTorch matrix multiplication?',
-                    diagnosis: 'Out-of-domain query correctly received 0 retrieved chunks. The refusal gate recognized missing context and invoked standard refusal response.',
-                    mitigation: 'Working as intended: zero hallucination permitted.'
-                  },
-                  {
-                    type: 'HALLUCINATION RISK / PARTIAL GROUNDING',
-                    question: 'At what team size do monolithic codebases typically start suffering from deployment bottlenecks?',
-                    diagnosis: 'Chunks retrieved mentioned 50 engineers. The model correctly retrieved the evidence chunk but added external phrasing regarding organizational silos.',
-                    mitigation: 'Tighten system prompt to strictly forbid ungrounded elaboration when answering quantitative questions.'
-                  },
-                  {
-                    type: 'FALSE ACCEPTANCE PREVENTION',
-                    question: 'What were the total quarterly revenues of OpenAI in Q3 2024?',
-                    diagnosis: 'Deliberately unanswerable test item. Retrieval returned 0 chunks above threshold (0.45). Model executed exact refusal.',
-                    mitigation: 'Refusal accuracy verified: 100% precision on out-of-domain adversarial distractors.'
-                  }
-                ].map((item, idx) => (
-                  <div key={idx} style={{ background: 'var(--input-bg)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 700, color: 'var(--color-arctic-3)' }}>{item.type}</span>
-                      <span className="badge-tag" style={{ fontSize: '0.7rem' }}>Root Cause Analysis</span>
-                    </div>
-                    <div style={{ color: 'var(--text-primary)', fontWeight: 500 }}>Q: {item.question}</div>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}><strong>Diagnosis:</strong> {item.diagnosis}</div>
-                    <div style={{ color: '#10b981', fontSize: '0.8rem' }}><strong>Recommended Fix:</strong> {item.mitigation}</div>
-                  </div>
-                ))}
               </div>
+            ))}
+          </div>
+        ) : (
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: 0 }}>
+            No document queries recorded yet. Ask questions in the AI Workspace to track your most studied topics.
+          </p>
+        )}
+      </div>
+
+      {/* 6. Learning Progress & Quiz Readiness */}
+      <div className="glass-card" style={{ padding: '1.8rem 2rem' }}>
+        <div className="card-header-row" style={{ marginBottom: '1.2rem' }}>
+          <div>
+            <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem' }}>
+              <GraduationCap size={18} className="logo-icon" /> Learning Progress & Practice
+            </h2>
+            <p className="card-desc" style={{ marginTop: '0.3rem' }}>
+              Track self-assessment materials synthesized from your vault documents.
+            </p>
+          </div>
+          <button 
+            className="btn-white-solid" 
+            onClick={() => navigate('/learning-studio')}
+            style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}
+          >
+            Open Learning Studio <ChevronRight size={14} />
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
+          {/* Flashcards Deck Status */}
+          <div style={{ 
+            background: 'var(--input-bg)', 
+            padding: '1.2rem', 
+            borderRadius: '0.6rem', 
+            border: '1px solid var(--glass-border)' 
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-arctic-1)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Layers size={16} /> Flashcard Decks
+              </span>
+              <span className="badge-tag" style={{ fontSize: '0.75rem' }}>
+                {learning_progress?.flashcard_decks || 0} decks
+              </span>
             </div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--color-arctic-1)', margin: '0.4rem 0' }}>
+              {learning_progress?.total_flashcards || 0} Cards
+            </div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+              Synthesized concept definitions ready for spaced repetition in the Learning Studio.
+            </p>
+          </div>
+
+          {/* Quiz Readiness Status */}
+          <div style={{ 
+            background: 'var(--input-bg)', 
+            padding: '1.2rem', 
+            borderRadius: '0.6rem', 
+            border: '1px solid var(--glass-border)' 
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-arctic-1)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <GraduationCap size={16} /> Practice Quizzes
+              </span>
+              <span className="badge-tag" style={{ fontSize: '0.75rem' }}>
+                {learning_progress?.quizzes_available || 0} quizzes
+              </span>
+            </div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--color-arctic-1)', margin: '0.4rem 0' }}>
+              {learning_progress?.total_quiz_questions || 0} Questions
+            </div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+              Multiple-choice questions with AI-grounded explanations compiled from your vault.
+            </p>
           </div>
         </div>
-      )}
 
-      {/* TAB 4: SYSTEM OVERVIEW & VAULT INGESTION */}
-      {activeTab === 'overview' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Metrics Counters */}
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
-            <div className="card-header-row" style={{ marginBottom: '1.2rem' }}>
-              <h2 className="card-title" style={{ margin: 0, fontSize: '1.1rem' }}>
-                <BarChart2 size={20} className="logo-icon" /> Knowledge & Learning Analytics
-              </h2>
-              <span className="badge-tag">Vault Infrastructure</span>
-            </div>
+        {/* Honest learning progress state */}
+        <div style={{ 
+          marginTop: '1.2rem', 
+          background: 'rgba(255, 255, 255, 0.02)', 
+          border: '1px dashed var(--glass-border)', 
+          borderRadius: '0.5rem', 
+          padding: '0.9rem 1.2rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.8rem'
+        }}>
+          <Clock size={18} color="var(--color-arctic-4)" style={{ flexShrink: 0 }} />
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            {learning_progress?.message || 'Learning progress and quiz mastery scores will appear as you complete study sessions in the Learning Studio.'}
+          </span>
+        </div>
+      </div>
 
-            <div className="stat-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              {[
-                { label: 'Documents Uploaded', value: `${stats?.total_documents || 0} Files`, desc: `${stats?.total_storage_mb || 0} MB total storage` },
-                { label: 'Conversations Started', value: `${stats?.total_conversations || 0} Threads`, desc: 'AI Grounded sessions' },
-                { label: 'Questions Asked', value: `${stats?.total_questions || 0}`, desc: 'Grounded prompts' },
-                { label: 'Flashcards Generated', value: `${stats?.total_flashcards || 0}`, desc: `In ${stats?.total_flashcard_decks || 0} study decks` },
-                { label: 'Quiz Questions', value: `${(stats?.total_quizzes || 0) * 4}`, desc: `In ${stats?.total_quizzes || 0} completed quizzes` },
-                { label: 'Study Materials', value: `${stats?.total_study_materials || 0} Decks`, desc: 'Quiz & Flashcard guides' }
-              ].map((m, i) => (
-                <div key={i} className="stat-item" style={{ padding: '1rem', background: 'var(--input-bg)', borderRadius: '0.6rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="stat-val" style={{ fontSize: '1.6rem', fontWeight: '700', color: 'var(--color-arctic-1)' }}>{m.value}</div>
-                  <div className="stat-lbl" style={{ fontSize: '0.85rem', color: 'var(--text-primary)', marginTop: '0.2rem' }}>{m.label}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '0.2rem' }}>{m.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* 7. Recent Activity Stream (Real timestamps and events from PostgreSQL) */}
+      <div className="glass-card" style={{ padding: '1.8rem 2rem' }}>
+        <div className="card-header-row" style={{ marginBottom: '1.2rem' }}>
+          <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem' }}>
+            <Clock size={18} className="logo-icon" /> Recent Activity
+          </h2>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            Chronological audit of vault and study events
+          </span>
+        </div>
 
-          {/* Progress Breakdown & Embedding Cache Performance */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-            <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)' }}>Ingestion & Format Distribution</h3>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {stats?.file_types && Object.keys(stats.file_types).length > 0 ? (
-                  Object.entries(stats.file_types).map(([ext, count], idx) => {
-                    const total = stats.total_documents || 1;
-                    const progress = Math.round((count / total) * 100);
-                    return (
-                      <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                          <span style={{ color: 'var(--text-primary)' }}>{ext} Format Documents</span>
-                          <span style={{ color: 'var(--color-arctic-1)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{count} Files</span>
-                        </div>
-                        <div style={{ width: '100%', height: '6px', background: 'var(--glass-border)', borderRadius: '3px', overflow: 'hidden' }}>
-                          <div style={{ width: `${progress}%`, height: '100%', background: 'var(--color-arctic-1)' }}></div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No document data yet.</div>
-                )}
-              </div>
-            </div>
+        {recent_activity && recent_activity.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+            {recent_activity.map(evt => {
+              const isClickable = evt.target_type === 'conversation' || evt.target_type === 'document' || evt.target_type === 'knowledge';
 
-            {/* Embedding Cache Performance Card */}
-            <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-arctic-1)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Database size={18} /> Embedding LRU Cache
-                </h3>
-                <button
-                  onClick={handleClearCache}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    background: 'transparent',
+              const handleClick = () => {
+                if (evt.target_type === 'conversation') {
+                  navigateToConversation(evt.target_id);
+                } else if (evt.target_type === 'document') {
+                  navigate('/knowledge-vault');
+                } else if (evt.target_type === 'knowledge') {
+                  navigate('/learning-studio');
+                }
+              };
+
+              return (
+                <div 
+                  key={evt.id}
+                  onClick={isClickable ? handleClick : undefined}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    padding: '0.8rem 1rem', 
+                    background: 'var(--input-bg)', 
+                    borderRadius: '0.5rem', 
                     border: '1px solid var(--glass-border)',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.75rem',
-                    padding: '0.3rem 0.6rem',
-                    borderRadius: '0.3rem',
-                    cursor: 'pointer'
+                    cursor: isClickable ? 'pointer' : 'default',
+                    transition: 'border-color 0.15s ease'
                   }}
                 >
-                  <Trash2 size={12} /> Purge
-                </button>
-              </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', minWidth: 0 }}>
+                    <div style={{ 
+                      width: 32, 
+                      height: 32, 
+                      borderRadius: '50%', 
+                      background: 'rgba(255, 255, 255, 0.05)', 
+                      border: '1px solid var(--glass-border)',
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      color: 'var(--color-arctic-1)',
+                      flexShrink: 0
+                    }}>
+                      {evt.event_type === 'document_upload' && <Upload size={15} />}
+                      {evt.event_type === 'document_processed' && <CheckCircle size={15} color="#10b981" />}
+                      {evt.event_type === 'conversation_start' && <MessageSquare size={15} />}
+                      {evt.event_type === 'question_asked' && <Send size={15} />}
+                      {evt.event_type === 'study_material' && <GraduationCap size={15} />}
+                    </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
-                <div style={{ padding: '0.8rem', background: 'var(--input-bg)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                  <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', fontFamily: 'var(--font-mono)' }}>
-                    {cacheStats?.hit_rate_pct || 0}%
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Cache Hit Rate</span>
-                </div>
-                <div style={{ padding: '0.8rem', background: 'var(--input-bg)', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                  <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
-                    {cacheStats?.cached_vectors_count || 0}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Vectors Cached</span>
-                </div>
-              </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ 
+                        fontSize: '0.9rem', 
+                        fontWeight: 500, 
+                        color: 'var(--color-arctic-1)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {evt.title}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                        {evt.details}
+                      </div>
+                    </div>
+                  </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                <span>Hits: <strong style={{ color: 'var(--text-primary)' }}>{cacheStats?.hits || 0}</strong></span>
-                <span>Misses: <strong style={{ color: 'var(--text-primary)' }}>{cacheStats?.misses || 0}</strong></span>
-                <span>Total Queries: <strong style={{ color: 'var(--text-primary)' }}>{cacheStats?.total_queries || 0}</strong></span>
-              </div>
-            </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      {formatRelativeTime(evt.timestamp)}
+                    </span>
+                    {isClickable && <ChevronRight size={14} color="var(--text-muted)" />}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
-      )}
+        ) : (
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: 0 }}>
+            No recorded activities yet.
+          </p>
+        )}
+      </div>
     </motion.div>
   );
 }

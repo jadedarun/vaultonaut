@@ -1,6 +1,6 @@
 import os
 import math
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 try:
     import fitz  # PyMuPDF

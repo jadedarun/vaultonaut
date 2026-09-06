@@ -22,6 +22,7 @@ from app.api.documents import router as documents_router
 from app.api.search import router as search_router
 from app.api.chat import router as chat_router
 from app.api.evaluation import router as evaluation_router
+from app.api.analytics import router as analytics_router
 
 
 
@@ -85,6 +86,7 @@ app.include_router(documents_router)
 app.include_router(search_router)
 app.include_router(chat_router)
 app.include_router(evaluation_router)
+app.include_router(analytics_router)
 
 
 
